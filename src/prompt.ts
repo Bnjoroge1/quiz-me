@@ -56,15 +56,16 @@ Rules:
 - For multiple-choice: include "options" with exactly 4 items and "answer" must equal one of them.
 - For true-false: "answer" must be "true" or "false". Omit options.
 - For short-answer: include "answer" as the model answer. Omit options.
-- Every question must have "explanation".
+- Every question must have "explanation" detailing the logical reason why the answer is correct.
 - Generate exactly ${difficultyMix.length} questions with difficulties: ${JSON.stringify(difficultyCounts)}.
 - Kind distribution: ${kindRules}.
-${hasPlan ? "- Include at least 3 plan-vs-code questions comparing plan against implementation." : ""}
+${hasPlan ? "- Include at least 3 plan-vs-code questions comparing the design plan against the actual implementation. Focus on divergences, trade-offs made during development, or missing features." : ""}
 ${!hasCode ? "- diff is empty: ask structural questions about the listed files." : ""}
 - CRITICAL TRACEABILITY RULE: For any question of kind "code" or "plan-vs-code", you MUST supply a valid "codeRef" object with the file's "path", "startLine" (1-based), and "endLine" (1-based). The reference must point EXACTLY to the location in the file where the question is grounded.
 - If a question is about the plan, "codeRef" should be null.
 - Only ask about code present in the provided diff or file list. Never invent APIs, functions, or symbols not visible in the provided context. Include code-specific questions checking implementation logic, control flow, syntax, or potential bugs in the codebase.
-
+- COGNITIVE SCIENCE DISTRACTOR RULE: For multiple-choice questions, the 3 incorrect options (distractors) MUST NOT be obvious filler. They must represent plausible developer misconceptions, such as off-by-one errors, common logical fallacies, incorrect scope references, or syntax misinterpretations.
+- DESIRABLE DIFFICULTIES: Ensure \"apply\" and \"analyze\" questions require active evaluation of logic, rather than simple rote memorization.
 ## Task scope: ${ctx.scope}${ctx.branchRef ? ` (vs ${ctx.branchRef})` : ""}
 
 ## Plan
