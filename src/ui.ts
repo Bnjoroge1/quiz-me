@@ -20,6 +20,14 @@ export function renderIndex(): string {
       --bad: #da3633;
       --code-bg: #090d16;
       --font-mono: ui-monospace, SFMono-Regular, SF Mono, Menlo, Monaco, Consolas, monospace;
+      
+      /* Surfaces: Layered depth shadows instead of solid borders */
+      --shadow-border: 
+        0px 0px 0px 1px rgba(255, 255, 255, 0.08),
+        0px 1px 2px -1px rgba(255, 255, 255, 0.04);
+      --shadow-border-hover: 
+        0px 0px 0px 1px rgba(255, 255, 255, 0.14),
+        0px 2px 4px -1px rgba(255, 255, 255, 0.08);
     }
     * { box-sizing: border-box; }
     body {
@@ -31,6 +39,10 @@ export function renderIndex(): string {
       flex-direction: column;
       height: 100vh;
       overflow: hidden;
+      
+      /* Typography: Font smoothing at root for crisper rendering on macOS */
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
     header {
       background: #161b22;
@@ -48,13 +60,14 @@ export function renderIndex(): string {
       display: flex;
       align-items: center;
       gap: 0.5rem;
+      text-wrap: balance; /* Typography: Balanced heading lines */
     }
     .badge {
       font-size: 0.75rem;
       background: var(--primary);
       color: #fff;
       padding: 0.12rem 0.4rem;
-      border-radius: 12px;
+      border-radius: 8px; /* Concentric radius: nested badge */
       font-weight: bold;
     }
     main {
@@ -97,39 +110,78 @@ export function renderIndex(): string {
       justify-content: space-between;
       flex-shrink: 0;
     }
+    
+    /* Surfaces: Concentric radius outer container */
     .card {
       background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 6px;
+      border-radius: 12px; /* Concentric radius: outer card */
+      box-shadow: var(--shadow-border);
       padding: 1.25rem;
       margin-bottom: 1rem;
+      transition: box-shadow 150ms ease-out;
     }
+    .card:hover {
+      box-shadow: var(--shadow-border-hover);
+    }
+    
+    /* Animations: Staggered enter transitions */
+    .stagger-item {
+      opacity: 0;
+      transform: translateY(8px);
+      animation: fadeInUp 250ms ease-out forwards;
+    }
+    @keyframes fadeInUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    .stagger-item:nth-child(1) { animation-delay: 0ms; }
+    .stagger-item:nth-child(2) { animation-delay: 60ms; }
+    .stagger-item:nth-child(3) { animation-delay: 120ms; }
+    .stagger-item:nth-child(4) { animation-delay: 180ms; }
+    
     .interactive-item {
       cursor: pointer;
-      transition: background 0.2s, border-color 0.2s;
+      transition: background 150ms ease-out, border-color 150ms ease-out, scale 150ms ease-out;
     }
     .interactive-item:hover {
       background: var(--accent);
-      border-color: #8b949e;
     }
+    /* Animations: Scale on press (0.96) */
+    .interactive-item:active {
+      scale: 0.96;
+    }
+    
     .meta {
       font-size: 0.8rem;
       color: #8b949e;
       margin-top: 0.25rem;
+      text-wrap: pretty; /* Typography: Pretty wrapping for subtexts */
     }
+    
+    /* Minimum Hit Area: Ensure buttons are at least 40px tall/wide */
     button {
       background: var(--accent);
       color: var(--fg);
       border: 1px solid var(--border);
-      padding: 0.5rem 1rem;
-      border-radius: 6px;
+      height: 40px; /* Minimum hit area */
+      padding: 0 1rem;
+      border-radius: 6px; /* Concentric radius: nested buttons */
       cursor: pointer;
       font-weight: 500;
-      transition: background 0.1s, border-color 0.1s;
+      
+      /* Animations: Specify exact properties, never use transition:all */
+      transition-property: background-color, border-color, scale;
+      transition-duration: 150ms;
+      transition-timing-function: ease-out;
     }
     button:hover:not(:disabled) {
       background: var(--accent-hover);
       border-color: #8b949e;
+    }
+    button:active:not(:disabled) {
+      scale: 0.96; /* Animations: Scale on press */
     }
     button:disabled {
       opacity: 0.4;
@@ -141,7 +193,7 @@ export function renderIndex(): string {
       color: #fff;
     }
     button.primary:hover:not(:disabled) {
-      background: #238636;
+      background: #2ea043;
       border-color: #2ea043;
     }
     .options {
@@ -150,6 +202,8 @@ export function renderIndex(): string {
       gap: 0.75rem;
       margin-top: 1rem;
     }
+    
+    /* Concentric Radius: Outer option-label */
     .option-label {
       display: flex;
       align-items: flex-start;
@@ -157,12 +211,18 @@ export function renderIndex(): string {
       padding: 0.75rem;
       background: #0d1117;
       border: 1px solid var(--border);
-      border-radius: 6px;
+      border-radius: 6px; /* Concentric: fits 12px card minus padding */
       cursor: pointer;
-      transition: border-color 0.2s;
+      transition-property: border-color, background-color, scale;
+      transition-duration: 150ms;
+      transition-timing-function: ease-out;
     }
     .option-label:hover {
       border-color: #8b949e;
+      background: var(--accent);
+    }
+    .option-label:active {
+      scale: 0.98; /* Animations: Subtle scale feedback */
     }
     .option-label input[type="radio"] {
       margin-top: 0.2rem;
@@ -177,6 +237,8 @@ export function renderIndex(): string {
       padding: 0.75rem;
       font-family: inherit;
       resize: vertical;
+      transition-property: border-color;
+      transition-duration: 150ms;
     }
     textarea:focus {
       outline: none;
@@ -228,6 +290,9 @@ export function renderIndex(): string {
       user-select: none;
       border-right: 1px solid #21262d;
       margin-right: 1rem;
+      
+      /* Typography: Tabular numbers for clean code line offsets */
+      font-variant-numeric: tabular-nums;
     }
     .code-text {
       flex: 1;
@@ -252,6 +317,9 @@ export function renderIndex(): string {
       padding: 0.5rem;
       border-radius: 6px;
       color: var(--fg);
+      height: 40px; /* Minimum hit area */
+      transition-property: border-color;
+      transition-duration: 150ms;
     }
     .search-bar input:focus {
       outline: none;
@@ -263,18 +331,23 @@ export function renderIndex(): string {
       gap: 1rem;
       margin-bottom: 1.5rem;
     }
+    
+    /* Concentric Radius: Outer grid cards */
     .stat-card {
       background: var(--card);
       border: 1px solid var(--border);
       padding: 1rem;
-      border-radius: 6px;
+      border-radius: 10px; /* Concentric: outer parent grid */
       text-align: center;
     }
+    
+    /* Typography: Tabular numbers for counters/scores */
     .stat-val {
       font-size: 1.8rem;
       font-weight: bold;
       color: var(--primary);
       margin-top: 0.25rem;
+      font-variant-numeric: tabular-nums;
     }
     .hidden { display: none !important; }
     .trace-link {
@@ -291,6 +364,14 @@ export function renderIndex(): string {
       display: flex;
       gap: 0.5rem;
       margin-top: 1rem;
+    }
+    
+    /* Typography: Pretty wrapping for prompts & titles */
+    #question-prompt {
+      text-wrap: pretty;
+    }
+    h2 {
+      text-wrap: balance;
     }
   </style>
   
@@ -322,18 +403,21 @@ export function renderIndex(): string {
     <div id="right-pane" class="pane">
       <!-- LIST VIEW -->
       <section id="list-view">
-        <div class="search-bar">
+        <div class="search-bar stagger-item">
           <input type="text" id="search-input" placeholder="Search quizzes..." />
           <button id="refresh-btn">Refresh</button>
         </div>
-        <div id="quiz-list"></div>
+        <div id="quiz-list" class="stagger-item"></div>
       </section>
 
       <!-- TAKE VIEW -->
       <section id="take-view" class="hidden">
-        <div class="card">
+        <div class="card stagger-item">
           <h2 id="quiz-title" style="margin-bottom: 0.5rem;"></h2>
-          <div id="progress" class="meta" style="margin-bottom: 1rem;"></div>
+          
+          <!-- Typography: Tabular numbers for questions counters -->
+          <div id="progress" class="meta" style="margin-bottom: 1rem; font-variant-numeric: tabular-nums;"></div>
+          
           <div id="question-prompt" style="font-size: 1.1rem; font-weight: 500; line-height: 1.4;"></div>
           <div id="trace-indicator"></div>
           <div id="question-options" class="options"></div>
@@ -349,8 +433,8 @@ export function renderIndex(): string {
 
       <!-- RESULTS VIEW -->
       <section id="results-view" class="hidden">
-        <h2>Quiz Results Summary</h2>
-        <div class="dashboard-grid">
+        <h2 class="stagger-item">Quiz Results Summary</h2>
+        <div class="dashboard-grid stagger-item">
           <div class="stat-card">
             <div>Score Percentage</div>
             <div id="stat-score" class="stat-val">0%</div>
@@ -364,8 +448,8 @@ export function renderIndex(): string {
             <div id="stat-self" class="stat-val">0</div>
           </div>
         </div>
-        <div id="review-list"></div>
-        <button id="results-back-btn" class="primary">Back to List</button>
+        <div id="review-list" class="stagger-item"></div>
+        <button id="results-back-btn" class="primary stagger-item">Back to List</button>
       </section>
     </div>
   </main>
@@ -577,7 +661,7 @@ export function renderIndex(): string {
       const total = currentQuiz.questions.length;
       
       document.getElementById('quiz-title').textContent = currentQuiz.summary;
-      document.getElementById('progress').textContent = \`Question \${currentIndex + 1} / \${total} &middot; Difficulty: \${q.difficulty} &middot; Category: \${q.kind}\`;
+      document.getElementById('progress').innerHTML = \`Question \${currentIndex + 1} / \${total} &middot; Difficulty: \${q.difficulty} &middot; Category: \${q.kind}\`;
       document.getElementById('question-prompt').textContent = q.prompt;
 
       const traceEl = document.getElementById('trace-indicator');
