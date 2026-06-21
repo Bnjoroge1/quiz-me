@@ -69,17 +69,20 @@ export function renderIndex(): string {
       height: 100%;
       overflow: hidden;
     }
+    /* LEFT PANE: Codebase Explorer & Trace Viewer */
     #left-pane {
       flex: 1;
       border-right: 1px solid var(--border);
-      padding: 1.5rem;
-      overflow-y: auto;
-    }
-    #right-pane {
-      width: 45%;
       background: var(--code-bg);
       display: flex;
       flex-direction: column;
+    }
+    /* RIGHT PANE: Quiz Studio */
+    #right-pane {
+      width: 42%;
+      padding: 1.5rem;
+      overflow-y: auto;
+      background: var(--bg);
     }
     .pane-title {
       font-size: 0.9rem;
@@ -194,27 +197,55 @@ export function renderIndex(): string {
       flex: 1;
       overflow: hidden;
     }
+    /* Collapsible Folder Directory Tree */
     .file-tree {
-      width: 200px;
+      width: 250px;
       border-right: 1px solid var(--border);
       overflow-y: auto;
       background: #0d1117;
-      padding: 0.5rem;
+      padding: 0.75rem 0.5rem;
+      user-select: none;
     }
-    .file-tree-item {
-      padding: 0.35rem 0.5rem;
+    .tree-node {
       font-size: 0.85rem;
+      line-height: 1.6;
+    }
+    .tree-row {
+      display: flex;
+      align-items: center;
+      padding: 0.25rem 0.4rem;
       cursor: pointer;
       border-radius: 4px;
+      gap: 0.4rem;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
     }
-    .file-tree-item:hover, .file-tree-item.active {
+    .tree-row:hover {
       background: var(--accent);
+    }
+    .tree-row.active {
+      background: rgba(31, 111, 235, 0.15);
+      color: #58a6ff;
+      font-weight: 500;
+    }
+    .tree-indent {
+      width: 1.25rem;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+    .tree-toggle {
+      width: 0.8rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      color: #8b949e;
+      flex-shrink: 0;
+    }
+    .tree-icon {
+      font-size: 0.95rem;
+      flex-shrink: 0;
     }
     .code-editor {
       flex: 1;
@@ -311,7 +342,22 @@ export function renderIndex(): string {
   </header>
 
   <main>
+    <!-- LEFT PANE: Codebase Explorer & Trace Viewer -->
     <div id="left-pane" class="pane">
+      <div class="pane-title">
+        <span>Codebase Explorer & Trace Viewer</span>
+        <span id="active-file-path" class="meta">No file open</span>
+      </div>
+      <div class="code-viewer-container">
+        <div class="file-tree" id="explorer-tree">
+          <div style="font-size:0.8rem; color:#8b949e; padding:0.5rem;">No files loaded.</div>
+        </div>
+        <pre class="code-editor" id="code-content"><code style="color:#484f58;">Select a file to inspect lines, or click "Trace Source Code" in a question to highlight grounded code sections.</code></pre>
+      </div>
+    </div>
+
+    <!-- RIGHT PANE: Quiz Studio -->
+    <div id="right-pane" class="pane">
       <!-- LIST VIEW -->
       <section id="list-view">
         <div class="search-bar">
@@ -360,20 +406,6 @@ export function renderIndex(): string {
         <button id="results-back-btn" class="primary">Back to List</button>
       </section>
     </div>
-
-    <!-- CODE VIEW SIDEBAR -->
-    <div id="right-pane" class="pane">
-      <div class="pane-title">
-        <span>Codebase Explorer & Trace Viewer</span>
-        <span id="active-file-path" class="meta">No file open</span>
-      </div>
-      <div class="code-viewer-container">
-        <div class="file-tree" id="explorer-tree">
-          <div style="font-size:0.8rem; color:#8b949e; padding:0.5rem;">No files loaded.</div>
-        </div>
-        <pre class="code-editor" id="code-content"><code style="color:#484f58;">Select a file to inspect lines, or click "Trace Source Code" in a question to highlight grounded code sections.</code></pre>
-      </div>
-    </div>
   </main>
 
   <script>
@@ -383,6 +415,7 @@ export function renderIndex(): string {
     let answers = {};
     let activeFilePath = null;
     let filesData = [];
+    let collapsedPaths = {}; // Map of folder paths that are collapsed
 
     // Initialize application
     window.addEventListener('load', () => {
@@ -439,6 +472,7 @@ export function renderIndex(): string {
         location.hash = '';
         currentQuiz = null;
         filesData = [];
+        collapsedPaths = {};
         renderFileTree();
         document.getElementById('code-content').innerHTML = '<code style="color:#484f58;">Select a file to inspect lines, or click "Trace Source Code" in a question to highlight grounded code sections.</code>';
         document.getElementById('active-file-path').textContent = 'No file open';
@@ -464,6 +498,7 @@ export function renderIndex(): string {
           filesData = [];
         }
 
+        collapsedPaths = {};
         renderFileTree();
         show('take-view');
         renderQuestion();
@@ -472,22 +507,103 @@ export function renderIndex(): string {
       }
     }
 
+    // Interactive directory tree builder
+    function buildTree(files) {
+      const root = { name: 'root', type: 'folder', path: '', children: {} };
+      files.forEach(f => {
+        const parts = f.path.split('/');
+        let current = root;
+        parts.forEach((part, idx) => {
+          const isLast = idx === parts.length - 1;
+          const currentPath = parts.slice(0, idx + 1).join('/');
+          if (!current.children[part]) {
+            current.children[part] = {
+              name: part,
+              path: currentPath,
+              type: isLast ? 'file' : 'folder',
+              children: {}
+            };
+          }
+          current = current.children[part];
+        });
+      });
+      return root;
+    }
+
+    function toggleFolder(path, event) {
+      if (event) event.stopPropagation();
+      collapsedPaths[path] = !collapsedPaths[path];
+      renderFileTree();
+    }
+
+    function renderNode(node, depth = 0) {
+      if (node.name === 'root') {
+        return Object.values(node.children)
+          .map(child => renderNode(child, depth))
+          .join('');
+      }
+
+      const isFolder = node.type === 'folder';
+      const isCollapsed = collapsedPaths[node.path];
+      const indent = '<span class="tree-indent"></span>'.repeat(depth);
+      
+      let toggleIcon = '';
+      let fileIcon = '';
+      
+      if (isFolder) {
+        toggleIcon = isCollapsed ? '▶' : '▼';
+        fileIcon = '📁';
+      } else {
+        toggleIcon = '';
+        fileIcon = '📄';
+      }
+
+      const activeClass = node.path === activeFilePath ? 'active' : '';
+      const onClickStr = isFolder 
+        ? \`toggleFolder('\${escapeJs(node.path)}', event)\`
+        : \`openFile('\${escapeJs(node.path)}')\`;
+
+      let html = \`
+        <div class="tree-node">
+          <div class="tree-row \${activeClass}" onclick="\${onClickStr}">
+            \${indent}
+            <span class="tree-toggle">\${toggleIcon}</span>
+            <span class="tree-icon">\${fileIcon}</span>
+            <span>\${escapeHtml(node.name)}</span>
+          </div>
+        </div>
+      \`;
+
+      if (isFolder && !isCollapsed) {
+        html += Object.values(node.children)
+          .map(child => renderNode(child, depth + 1))
+          .join('');
+      }
+
+      return html;
+    }
+
     function renderFileTree() {
-      const tree = document.getElementById('explorer-tree');
+      const treeContainer = document.getElementById('explorer-tree');
       if (!filesData || !filesData.length) {
-        tree.innerHTML = '<div style="font-size:0.8rem; color:#8b949e; padding:0.5rem;">No files available in this quiz scope.</div>';
+        treeContainer.innerHTML = '<div style="font-size:0.8rem; color:#8b949e; padding:0.5rem;">No files available in this quiz scope.</div>';
         return;
       }
-      tree.innerHTML = filesData.map(f => \`
-        <div class="file-tree-item \${f.path === activeFilePath ? 'active' : ''}" onclick="openFile('\${escapeJs(f.path)}')">
-          📄 \${f.path.split('/').pop()}
-        </div>
-      \`).join('');
+      const treeRoot = buildTree(filesData);
+      treeContainer.innerHTML = renderNode(treeRoot);
     }
 
     function openFile(path, highlightLines = null) {
       activeFilePath = path;
       document.getElementById('active-file-path').textContent = path;
+      
+      // Auto-expand parent folders of the active file
+      const parts = path.split('/');
+      for (let i = 0; i < parts.length - 1; i++) {
+        const parentPath = parts.slice(0, i + 1).join('/');
+        collapsedPaths[parentPath] = false;
+      }
+
       renderFileTree();
 
       const f = filesData.find(x => x.path === path);

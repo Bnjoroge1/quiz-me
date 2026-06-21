@@ -1,6 +1,6 @@
 {
   "name": "@bnjoroge/quiz-me-app",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Context-aware quiz plugin for coding agents",
   "type": "module",
   "bin": {
