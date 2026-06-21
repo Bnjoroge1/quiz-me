@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(quiz-me serve *)",
+      "Bash(quiz-me generate *)"
+    ]
+  }
+}

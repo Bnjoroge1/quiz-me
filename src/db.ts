@@ -31,6 +31,13 @@ export class QuizDB {
         FOREIGN KEY(quiz_id) REFERENCES quizzes(id) ON DELETE CASCADE
       );
       CREATE INDEX IF NOT EXISTS idx_attempts_quiz ON attempts(quiz_id);
+      CREATE TABLE IF NOT EXISTS staged_contexts(
+        context_digest TEXT PRIMARY KEY,
+        diff TEXT,
+        plan_text TEXT,
+        files_json TEXT,
+        created_at TEXT NOT NULL
+      );
     `);
 
     // Add new columns if not present (migration step)
@@ -186,6 +193,43 @@ export class QuizDB {
       score: r.score,
       answers: JSON.parse(r.answers_json) as AttemptAnswer[],
     }));
+  }
+
+  stageContext(input: { contextDigest: string; diff?: string; planText?: string; filesJson?: string }): void {
+    const createdAt = new Date().toISOString();
+    // Use REPLACE to avoid duplicate key errors on regenerations
+    this.db
+      .prepare(
+        `INSERT OR REPLACE INTO staged_contexts (context_digest, diff, plan_text, files_json, created_at)
+         VALUES (?, ?, ?, ?, ?)`
+      )
+      .run(
+        input.contextDigest,
+        input.diff ?? null,
+        input.planText ?? null,
+        input.filesJson ?? null,
+        createdAt
+      );
+  }
+
+  getStagedContext(contextDigest: string): { diff?: string; planText?: string; filesJson?: string } | undefined {
+    const row = this.db
+      .prepare(`SELECT * FROM staged_contexts WHERE context_digest = ?`)
+      .get(contextDigest) as
+      | {
+          context_digest: string;
+          diff: string | null;
+          plan_text: string | null;
+          files_json: string | null;
+          created_at: string;
+        }
+      | undefined;
+    if (!row) return undefined;
+    return {
+      diff: row.diff ?? undefined,
+      planText: row.plan_text ?? undefined,
+      filesJson: row.files_json ?? undefined,
+    };
   }
 
   close(): void {

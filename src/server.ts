@@ -83,6 +83,23 @@ export function createServer(db: QuizDB, host = "127.0.0.1"): Server {
         return;
       }
 
+      if (req.method === "POST" && path === "/api/contexts") {
+        const raw = await readBody(req);
+        const body = JSON.parse(raw) as {
+          contextDigest: string;
+          diff?: string;
+          planText?: string;
+          filesJson?: string;
+        };
+        if (!body.contextDigest) {
+          json(res, 400, { error: "contextDigest required" });
+          return;
+        }
+        db.stageContext(body);
+        json(res, 200, { ok: true });
+        return;
+      }
+
       if (req.method === "POST" && path === "/api/quizzes") {
         const raw = await readBody(req);
         const body = JSON.parse(raw) as QuizPayload &
@@ -99,6 +116,21 @@ export function createServer(db: QuizDB, host = "127.0.0.1"): Server {
         const scope = (body.scope ?? url.searchParams.get("scope") ?? "uncommitted") as CreateQuizMeta["scope"];
         const branchRef = body.branchRef ?? url.searchParams.get("branchRef") ?? undefined;
         const contextDigest = body.contextDigest ?? url.searchParams.get("contextDigest") ?? "";
+
+        // Attempt to merge pre-staged context if present
+        let mergedDiff = body.diff || url.searchParams.get("diff") || undefined;
+        let mergedPlanText = body.planText || url.searchParams.get("planText") || undefined;
+        let mergedFilesJson = body.filesJson || url.searchParams.get("filesJson") || undefined;
+
+        if (contextDigest) {
+          const staged = db.getStagedContext(contextDigest);
+          if (staged) {
+            if (!mergedDiff) mergedDiff = staged.diff;
+            if (!mergedPlanText) mergedPlanText = staged.planText;
+            if (!mergedFilesJson) mergedFilesJson = staged.filesJson;
+          }
+        }
+
         const questions: Question[] = body.questions.map((q) => ({
           ...q,
           id: crypto.randomUUID(),
@@ -111,9 +143,9 @@ export function createServer(db: QuizDB, host = "127.0.0.1"): Server {
           summary: body.summary,
           contextDigest,
           questions,
-          diff: body.diff || url.searchParams.get("diff") || undefined,
-          planText: body.planText || url.searchParams.get("planText") || undefined,
-          filesJson: body.filesJson || url.searchParams.get("filesJson") || undefined,
+          diff: mergedDiff,
+          planText: mergedPlanText,
+          filesJson: mergedFilesJson,
         });
         const addr = res.socket?.localPort ?? url.port;
         const base = `http://${host}:${addr}`;

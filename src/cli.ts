@@ -101,7 +101,7 @@ async function ensureServer(): Promise<number> {
   return port;
 }
 
-function cmdGenerate(args: Record<string, string | boolean>): void {
+async function cmdGenerate(args: Record<string, string | boolean>): Promise<void> {
   const scope = (String(args.scope ?? "uncommitted")) as Scope;
   const branchRef = args.branch ? String(args.branch) : undefined;
   if (scope === "branch" && !branchRef) {
@@ -115,9 +115,31 @@ function cmdGenerate(args: Record<string, string | boolean>): void {
       branchRef,
       planPath: args.plan ? String(args.plan) : undefined,
     });
+
+    const port = readPortFile() ?? 7331;
+
+    // Pre-stage context payload to server
+    try {
+      const payload = {
+        contextDigest: ctx.contextDigest,
+        diff: ctx.diff,
+        planText: ctx.planText,
+        filesJson: JSON.stringify(ctx.filesContent ?? []),
+      };
+      const res = await fetch(`http://${HOST}:${port}/api/contexts`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        console.warn(`[quiz-me] Warning: context staging returned status ${res.status}`);
+      }
+    } catch (e) {
+      console.warn("[quiz-me] Warning: failed to connect to local server for context pre-staging. Code traces may not be available in this quiz.");
+    }
+
     const prompt = buildPrompt(ctx, mix);
     console.log(prompt);
-    const port = readPortFile() ?? 7331;
     console.log(
       `\nPOST to http://${HOST}:${port}/api/quizzes?scope=${ctx.scope}&contextDigest=${ctx.contextDigest}${ctx.branchRef ? `&branchRef=${ctx.branchRef}` : ""} with the JSON body.`
     );
@@ -212,7 +234,7 @@ async function main(): Promise<void> {
       await cmdServe(args);
       break;
     case "generate":
-      cmdGenerate(args);
+      await cmdGenerate(args);
       break;
     case "auto":
       await cmdAuto(args);
