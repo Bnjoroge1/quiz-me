@@ -132,8 +132,6 @@ function cmdGenerate(args: Record<string, string | boolean>): void {
 
 async function cmdAuto(args: Record<string, string | boolean>): Promise<void> {
   const scope = (String(args.scope ?? "uncommitted")) as Scope;
-  const difficulty = String(args.difficulty ?? "mix");
-  const mix = resolveDifficultyMix(difficulty);
   try {
     const ctx = gatherContext(scope);
     if (scope === "uncommitted" && !ctx.diff.trim()) {
@@ -143,13 +141,21 @@ async function cmdAuto(args: Record<string, string | boolean>): Promise<void> {
     if (last === ctx.contextDigest) {
       process.exit(0);
     }
-    await ensureServer();
-    const prompt = buildPrompt(ctx, mix);
-    console.log(prompt);
-    const port = readPortFile() ?? 7331;
-    console.log(
-      `\nPOST to http://${HOST}:${port}/api/quizzes?scope=${ctx.scope}&contextDigest=${ctx.contextDigest} with the JSON body.`
-    );
+
+    // Interactive Agent Instruction
+    console.log(`[quiz-me] New modifications detected since the last session.
+Ask the user if they would like to take a quiz to verify their understanding of the changes.
+Offer the following options:
+1. uncommitted (Default: quiz on recent changes)
+2. whole (Quiz on the entire project)
+3. branch (Quiz on changes against a target branch)
+4. Skip/No thanks.
+
+If they select 1, 2, or 3, run the corresponding command:
+'quiz-me generate --scope <uncommitted|whole|branch> [--branch <ref>]'
+and complete the quiz generation flow.`);
+    
+    // Save digest to prevent duplicate prompts for the same unmodified changes
     writeLastDigest(ctx.contextDigest);
   } catch (err) {
     if (err instanceof ContextError) {

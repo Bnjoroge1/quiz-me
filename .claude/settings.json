@@ -2,8 +2,13 @@
   "hooks": {
     "Stop": [
       {
-        "type": "command",
-        "command": "quiz-me auto --scope uncommitted"
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "quiz-me auto --scope uncommitted"
+          }
+        ]
       }
     ]
   }
