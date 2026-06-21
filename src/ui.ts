@@ -82,6 +82,7 @@ export function renderIndex(): string {
       height: 100%;
       overflow: hidden;
     }
+    
     /* LEFT PANE: Codebase Explorer & Trace Viewer */
     #left-pane {
       flex: 1;
@@ -89,14 +90,43 @@ export function renderIndex(): string {
       background: var(--code-bg);
       display: flex;
       flex-direction: column;
+      
+      /* Animations: Smooth collapsible width transition */
+      transition: width 200ms cubic-bezier(0.2, 0, 0, 1), min-width 200ms cubic-bezier(0.2, 0, 0, 1);
+      min-width: 300px;
     }
+    
     /* RIGHT PANE: Quiz Studio */
     #right-pane {
       width: 42%;
       padding: 1.5rem;
       overflow-y: auto;
       background: var(--bg);
+      
+      /* Animations: Smooth transition alongside left-pane */
+      transition: width 200ms cubic-bezier(0.2, 0, 0, 1);
     }
+    
+    /* Collapsed State modifications */
+    .explorer-collapsed #left-pane {
+      width: 40px !important;
+      min-width: 40px !important;
+      background: #161b22;
+    }
+    .explorer-collapsed #right-pane {
+      width: calc(100% - 40px) !important;
+    }
+    .explorer-collapsed .code-viewer-container,
+    .explorer-collapsed #active-file-path,
+    .explorer-collapsed .pane-title span:first-child {
+      display: none !important;
+    }
+    .explorer-collapsed .pane-title {
+      justify-content: center !important;
+      padding: 0.5rem 0 !important;
+      border-bottom: none !important;
+    }
+    
     .pane-title {
       font-size: 0.9rem;
       text-transform: uppercase;
@@ -384,12 +414,15 @@ export function renderIndex(): string {
     <div id="header-meta" class="meta"></div>
   </header>
 
-  <main>
+  <main id="app-container">
     <!-- LEFT PANE: Codebase Explorer & Trace Viewer -->
     <div id="left-pane" class="pane">
       <div class="pane-title">
         <span>Codebase Explorer & Trace Viewer</span>
-        <span id="active-file-path" class="meta">No file open</span>
+        <div style="display: flex; align-items: center;">
+          <span id="active-file-path" class="meta" style="margin-right: 0.75rem;">No file open</span>
+          <button id="toggle-explorer-btn" style="height: 28px; padding: 0 0.5rem; font-size: 0.75rem; border-radius: 4px;">◀ Collapse</button>
+        </div>
       </div>
       <div class="code-viewer-container">
         <div class="file-tree" id="explorer-tree">
@@ -503,6 +536,7 @@ export function renderIndex(): string {
     let answers = {};
     let activeFilePath = null;
     let filesData = [];
+    let isExplorerCollapsed = false;
 
     // Initialize application
     window.addEventListener('load', () => {
@@ -514,7 +548,25 @@ export function renderIndex(): string {
       document.getElementById('submit-btn').addEventListener('click', submitQuiz);
       document.getElementById('back-btn').addEventListener('click', () => show('list-view'));
       document.getElementById('results-back-btn').addEventListener('click', () => show('list-view'));
+      
+      // Collapsible logic
+      document.getElementById('toggle-explorer-btn').addEventListener('click', toggleExplorer);
     });
+
+    function toggleExplorer() {
+      isExplorerCollapsed = !isExplorerCollapsed;
+      const app = document.getElementById('app-container');
+      const btn = document.getElementById('toggle-explorer-btn');
+      
+      app.classList.toggle('explorer-collapsed', isExplorerCollapsed);
+      if (isExplorerCollapsed) {
+        btn.textContent = '▶';
+        btn.title = 'Expand Explorer';
+      } else {
+        btn.textContent = '◀ Collapse';
+        btn.title = 'Collapse Explorer';
+      }
+    }
 
     async function loadQuizzes() {
       try {
@@ -608,6 +660,11 @@ export function renderIndex(): string {
       activeFilePath = path;
       document.getElementById('active-file-path').textContent = path;
       
+      // Auto-expand explorer if a trace link is clicked when collapsed
+      if (isExplorerCollapsed && highlightLines) {
+        toggleExplorer();
+      }
+
       // Sync focus with @pierre/trees
       if (typeof window.focusPierreTreePath === 'function') {
         window.focusPierreTreePath(path);
