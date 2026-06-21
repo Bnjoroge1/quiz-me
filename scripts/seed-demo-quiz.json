@@ -1,0 +1,73 @@
+{
+  "summary": "quiz-me plugin architecture (demo quiz)",
+  "questions": [
+    {
+      "difficulty": "recall",
+      "kind": "code",
+      "type": "multiple-choice",
+      "prompt": "Which module builds the quiz generation prompt from git context?",
+      "options": ["src/server.ts", "src/prompt.ts", "src/db.ts", "src/ui.ts"],
+      "answer": "src/prompt.ts",
+      "explanation": "buildPrompt() in src/prompt.ts assembles the JSON schema, rules, plan, diff, and file list.",
+      "codeRef": { "path": "src/prompt.ts", "startLine": 15, "endLine": 78 }
+    },
+    {
+      "difficulty": "recall",
+      "kind": "plan-vs-code",
+      "type": "true-false",
+      "prompt": "The plan states the quiz server should call OpenAI directly for question generation.",
+      "answer": "false",
+      "explanation": "The server does NOT call any LLM. The coding agent generates JSON using its Claude/Codex subscription.",
+      "codeRef": { "path": "docs/plan.md", "startLine": 11, "endLine": 12 }
+    },
+    {
+      "difficulty": "apply",
+      "kind": "code",
+      "type": "multiple-choice",
+      "prompt": "What happens when you run quiz-me generate?",
+      "options": [
+        "Calls OpenAI and opens the browser automatically",
+        "Prints a prompt to stdout for the agent to answer with JSON",
+        "Writes questions directly to SQLite without an agent",
+        "Opens a TUI in the terminal"
+      ],
+      "answer": "Prints a prompt to stdout for the agent to answer with JSON",
+      "explanation": "cmdGenerate gathers context, calls buildPrompt(), logs the prompt, then prints the POST URL.",
+      "codeRef": { "path": "src/cli.ts", "startLine": 104, "endLine": 131 }
+    },
+    {
+      "difficulty": "apply",
+      "kind": "plan-vs-code",
+      "type": "multiple-choice",
+      "prompt": "Which CLI flag quizzes changes since a branch fork point?",
+      "options": [
+        "--scope uncommitted",
+        "--scope whole",
+        "--scope branch --branch main",
+        "--scope diff --since HEAD~1"
+      ],
+      "answer": "--scope branch --branch main",
+      "explanation": "branch scope runs git diff ref...HEAD. uncommitted uses git diff HEAD; whole uses git ls-files.",
+      "codeRef": { "path": "src/context.ts", "startLine": 92, "endLine": 117 }
+    },
+    {
+      "difficulty": "analyze",
+      "kind": "code",
+      "type": "short-answer",
+      "prompt": "Why does quiz-me split into a server + agent integration instead of calling an LLM from Node?",
+      "answer": "So quiz generation uses the host agent's Claude/Codex subscription without a separate API key.",
+      "explanation": "The agent already has repo context and subscription auth.",
+      "codeRef": { "path": "adapters/oh-my-pi/skill.md", "startLine": 17, "endLine": 32 }
+    },
+    {
+      "difficulty": "analyze",
+      "kind": "plan",
+      "type": "multiple-choice",
+      "prompt": "Default mix difficulty produces how many questions?",
+      "options": ["5 questions", "10 questions: 2 recall, 5 apply, 3 analyze", "10 questions: 3 recall, 5 apply, 2 analyze", "15 questions"],
+      "answer": "10 questions: 2 recall, 5 apply, 3 analyze",
+      "explanation": "DIFFICULTY_PRESETS.mix in src/prompt.ts has 10 entries.",
+      "codeRef": { "path": "src/prompt.ts", "startLine": 5, "endLine": 9 }
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "name": "quiz-me",
+  "version": "0.1.0",
+  "description": "Context-aware quiz plugin for coding agents",
+  "type": "module",
+  "bin": {
+    "quiz-me": "./dist/src/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "npm run build && node --test dist/test/*.test.js",
+    "start": "node dist/src/cli.js serve"
+  },
+  "engines": {
+    "node": ">=22.5"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^22.13.10",
+    "typescript": "^5.8.2"
+  },
+  "files": [
+    "dist/",
+    "adapters/"
+  ],
+  "dependencies": {
+    "better-sqlite3": "^12.11.1"
+  }
+}

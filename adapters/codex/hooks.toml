@@ -1,0 +1,3 @@
+[[hooks]]
+event = "stop"
+command = "quiz-me auto --scope uncommitted"

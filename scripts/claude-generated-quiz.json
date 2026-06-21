@@ -1,0 +1,125 @@
+{
+  "summary": "Quiz covering the quiz-me plugin architecture, design decisions, and implementation plan. Scope: whole project. Note: the only file present (smoke.ts) is empty (0 lines), so all questions are grounded in the plan document.",
+  "questions": [
+    {
+      "difficulty": "recall",
+      "kind": "plan",
+      "type": "multiple-choice",
+      "prompt": "According to the quiz-me architecture plan, which two cooperating halves make up the system?",
+      "options": [
+        "LLM client and database layer",
+        "Quiz server and agent integration",
+        "CLI and browser UI",
+        "Git context gatherer and prompt template"
+      ],
+      "answer": "Quiz server and agent integration",
+      "explanation": "The plan explicitly states: 'Two cooperating halves: 1. Quiz server — SQLite store, HTTP server + browser UI, git-context gatherer, and a prompt template. 2. Agent integration — the coding agent generates questions using its own model, then POSTs JSON to the server.'",
+      "codeRef": null
+    },
+    {
+      "difficulty": "recall",
+      "kind": "plan",
+      "type": "multiple-choice",
+      "prompt": "What Node.js built-in module does the plan specify for SQLite storage?",
+      "options": [
+        "better-sqlite3",
+        "sqlite3",
+        "node:sqlite",
+        "node:database"
+      ],
+      "answer": "node:sqlite",
+      "explanation": "The plan states: 'SQLite at $XDG_DATA_HOME/quiz-me/quizzes.db via Node built-in node:sqlite.' This is notable because it uses the native Node.js built-in rather than a third-party package.",
+      "codeRef": null
+    },
+    {
+      "difficulty": "recall",
+      "kind": "plan",
+      "type": "multiple-choice",
+      "prompt": "What are the three supported quiz scopes in the quiz-me plan?",
+      "options": [
+        "staged, unstaged, remote",
+        "uncommitted, whole, branch",
+        "diff, snapshot, history",
+        "local, remote, archive"
+      ],
+      "answer": "uncommitted, whole, branch",
+      "explanation": "The plan lists three scopes: uncommitted (git diff HEAD, default auto-hook), whole (git ls-files), and branch (git diff <ref>...HEAD).",
+      "codeRef": null
+    },
+    {
+      "difficulty": "apply",
+      "kind": "plan-vs-code",
+      "type": "true-false",
+      "prompt": "The plan states the quiz server is responsible for calling the LLM to generate questions. The current file list (smoke.ts at 0 lines) confirms this responsibility has been implemented in the server layer.",
+      "answer": "false",
+      "explanation": "The plan explicitly states the quiz server 'does NOT call any LLM.' It is the agent integration half that generates questions using the host coding agent's own model and POSTs JSON to the server. Additionally, smoke.ts has 0 lines, so no implementation exists to confirm anything.",
+      "codeRef": null
+    },
+    {
+      "difficulty": "apply",
+      "kind": "plan-vs-code",
+      "type": "multiple-choice",
+      "prompt": "The plan's verification section specifies `npm run build` before running the CLI. Given that smoke.ts is the only file present and has 0 lines, what is the most likely current state of the project?",
+      "options": [
+        "The build would succeed because smoke.ts compiles to an empty module",
+        "The build would fail because package.json and tsconfig.json are listed as untracked but src/ has no implementation files",
+        "The build would succeed because TypeScript allows empty entry points",
+        "The build would fail only if node:sqlite is unavailable"
+      ],
+      "answer": "The build would fail because package.json and tsconfig.json are listed as untracked but src/ has no implementation files",
+      "explanation": "The git status shows package.json, tsconfig.json, and src/ as untracked new files, and smoke.ts is deleted. The plan's verification requires `npm install && npm run build && npm test` followed by `node dist/src/cli.js serve`, implying a TypeScript source tree under src/ — which currently has no committed implementation.",
+      "codeRef": null
+    },
+    {
+      "difficulty": "apply",
+      "kind": "plan",
+      "type": "short-answer",
+      "prompt": "According to the plan, what is the default difficulty distribution for a generated quiz (number of questions per difficulty level)?",
+      "answer": "10 questions total: 2 recall, 5 apply, 3 analyze",
+      "explanation": "The plan's Assumptions section states: 'Default difficulty = 10 questions (2 recall / 5 apply / 3 analyze).' This mirrors the distribution used in the quiz schema definition.",
+      "codeRef": null
+    },
+    {
+      "difficulty": "apply",
+      "kind": "plan",
+      "type": "multiple-choice",
+      "prompt": "Which CLI command should be used to trigger the quiz automatically as part of a post-review hook, with deduplication based on a digest?",
+      "options": [
+        "quiz-me generate --scope uncommitted",
+        "quiz-me serve",
+        "quiz-me auto",
+        "quiz-me install --platform oh-my-pi"
+      ],
+      "answer": "quiz-me auto",
+      "explanation": "The plan lists `quiz-me auto` as the 'hook command with digest dedupe.' It is distinct from `quiz-me generate` and is specifically designed to be fired by the post-review hook, with deduplication so the same diff doesn't re-trigger a quiz.",
+      "codeRef": null
+    },
+    {
+      "difficulty": "apply",
+      "kind": "plan-vs-code",
+      "type": "true-false",
+      "prompt": "The plan describes an adapter directory structure with subdirectories for oh-my-pi, claude-code, and codex platforms. Based on the git status, these adapter directories exist as untracked files in the repository.",
+      "answer": "true",
+      "explanation": "The git status shows `?? adapters/` as an untracked directory, which aligns with the plan's platform section referencing `adapters/oh-my-pi/skill.md` and `adapters/claude-code/`. The directory exists but has not yet been committed.",
+      "codeRef": null
+    },
+    {
+      "difficulty": "analyze",
+      "kind": "plan-vs-code",
+      "type": "short-answer",
+      "prompt": "The plan designates Oh My Pi as the 'primary' platform, yet the architecture uses a platform-agnostic quiz server with separate adapter directories. What architectural benefit does this separation provide, and what tension does it create with the 'primary' platform designation?",
+      "answer": "The separation keeps the quiz server stateless with respect to platform, allowing the same HTTP endpoint and SQLite store to serve all platforms without modification. The tension is that Oh My Pi being 'primary' implies it drives initial design decisions and the skill.md adapter format, which could inadvertently encode Oh My Pi-specific assumptions into the shared server contract (the JSON POST shape) before claude-code and codex adapters are built.",
+      "explanation": "Good architecture separates concerns so the server doesn't need to know which platform posted a quiz. However, designating a 'primary' platform risks letting that platform's idioms bleed into shared contracts. A team should explicitly version or schema-validate the POST body to prevent this.",
+      "codeRef": null
+    },
+    {
+      "difficulty": "analyze",
+      "kind": "plan",
+      "type": "short-answer",
+      "prompt": "The plan requires quizzes to include 'plan-vs-code comparison questions' that compare the plan against the implementation. Identify one structural risk in the plan's current design that could make generating accurate plan-vs-code questions unreliable at runtime.",
+      "answer": "The quiz server does not call the LLM — it only stores and serves questions generated by the agent. The agent generates questions from context (diff or file list) at one point in time, but the plan document itself is not versioned or stored alongside the quiz. If the plan changes after a quiz is generated, there is no way to detect that plan-vs-code questions are now comparing the code against a stale or different version of the plan, making those questions potentially misleading.",
+      "explanation": "Reliable plan-vs-code questions require that both the plan artifact and the code snapshot are immutable and co-stored. The current architecture stores only the generated JSON questions in SQLite, not the source plan or diff that produced them. Adding a plan_hash or storing the raw plan text alongside each quiz session would address this.",
+      "codeRef": null
+    }
+  ]
+}

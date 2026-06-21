@@ -1,0 +1,6 @@
+{
+  "name": "quiz-me",
+  "version": "0.1.0",
+  "description": "Generate quizzes to test understanding of the current task or code.",
+  "skill": "skill.md"
+}
