@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 import { spawn, execSync } from "node:child_process";
 import { platform } from "node:os";
+import { join, resolve, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 import { QuizDB } from "./db.js";
 import { gatherContext, ContextError } from "./context.js";
 import { buildPrompt, resolveDifficultyMix } from "./prompt.js";
@@ -221,8 +223,14 @@ function cmdInstall(args: Record<string, string | boolean>): void {
     console.error(`Error: --platform must be one of: ${valid.join(", ")}`);
     process.exit(2);
   }
-  const script = `adapters/${platformName}/install.sh`;
-  execSync(`bash ${script} ${target}`, { stdio: "inherit" });
+  
+  // Resolve path relative to the package installation directory
+  const currentDir = import.meta.dirname || dirname(fileURLToPath(import.meta.url));
+  const packageRootDir = resolve(currentDir, "..", "..");
+  const script = join(packageRootDir, "adapters", platformName, "install.sh");
+
+  console.log(`[quiz-me] Executing installer: ${script}`);
+  execSync(`bash "${script}" "${target}"`, { stdio: "inherit" });
 }
 
 async function main(): Promise<void> {
