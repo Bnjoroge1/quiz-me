@@ -1,13 +1,13 @@
 {
   "name": "@bnjoroge/quiz-me-app",
-  "version": "0.1.9",
+  "version": "0.2.0",
   "description": "Context-aware quiz plugin for coding agents",
   "type": "module",
   "bin": {
     "quiz-me": "dist/src/cli.js"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && mkdir -p dist/src/assets && cp -R node_modules/@pierre/trees/dist/ dist/src/assets/trees/",
     "test": "npm run build && node --test dist/test/*.test.js",
     "start": "node dist/src/cli.js serve"
   },
@@ -24,6 +24,7 @@
     "adapters/"
   ],
   "dependencies": {
+    "@pierre/trees": "^1.0.0-beta.4",
     "better-sqlite3": "^12.11.1"
   }
 }

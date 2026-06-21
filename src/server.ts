@@ -5,6 +5,7 @@ import {
   type ServerResponse,
 } from "node:http";
 import { URL } from "node:url";
+import { readFileSync } from "node:fs";
 import type { QuizDB } from "./db.js";
 import type { CreateQuizMeta, Question, QuizPayload } from "./types.js";
 import { renderIndex } from "./ui.js";
@@ -55,10 +56,26 @@ export function createServer(db: QuizDB, host = "127.0.0.1"): Server {
     try {
       const url = new URL(req.url ?? "/", `http://${req.headers.host ?? "localhost"}`);
       const path = url.pathname;
+      console.log(`[server] ${req.method} ${path}`);
 
       if (req.method === "GET" && path === "/") {
         res.writeHead(200, { "Content-Type": "text/html" });
         res.end(renderIndex());
+        return;
+      }
+
+      if (req.method === "GET" && path.startsWith("/assets/")) {
+        try {
+          const relativePath = path.substring(8); // remove "/assets/"
+          const filePath = new URL("./assets/" + relativePath, import.meta.url);
+          const data = readFileSync(filePath); // Read file first to avoid writeHead jank on error
+          const ext = relativePath.split(".").pop();
+          const contentType = ext === "css" ? "text/css" : "application/javascript";
+          res.writeHead(200, { "Content-Type": contentType });
+          res.end(data);
+        } catch {
+          json(res, 404, { error: "not found" });
+        }
         return;
       }
 

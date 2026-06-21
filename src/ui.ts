@@ -8,67 +8,68 @@ export function renderIndex(): string {
   <style>
     :root {
       color-scheme: dark;
-      --bg: #0d1117;
-      --fg: #c9d1d9;
-      --card: #161b22;
-      --border: #30363d;
-      --accent: #21262d;
-      --accent-hover: #30363d;
-      --primary: #1f6feb;
-      --ok: #238636;
-      --ok-hover: #2ea043;
-      --bad: #da3633;
-      --code-bg: #090d16;
-      --font-mono: ui-monospace, SFMono-Regular, SF Mono, Menlo, Monaco, Consolas, monospace;
+      /* oklch theme variables from developer-training-studio globals.css */
+      --background: oklch(0.155 0.005 285);
+      --foreground: oklch(0.96 0 0);
+      --card: oklch(0.19 0.005 285);
+      --border: oklch(1 0 0 / 9%);
+      --primary: oklch(0.62 0.17 250);
+      --primary-foreground: oklch(0.98 0 0);
+      --secondary: oklch(0.26 0.006 285);
+      --secondary-foreground: oklch(0.96 0 0);
+      --muted-foreground: oklch(0.66 0.006 285);
+      --accent: oklch(0.28 0.007 285);
+      --accent-foreground: oklch(0.98 0 0);
       
-      /* Surfaces: Layered depth shadows instead of solid borders */
-      --shadow-border: 
-        0px 0px 0px 1px rgba(255, 255, 255, 0.08),
-        0px 1px 2px -1px rgba(255, 255, 255, 0.04);
-      --shadow-border-hover: 
-        0px 0px 0px 1px rgba(255, 255, 255, 0.14),
-        0px 2px 4px -1px rgba(255, 255, 255, 0.08);
+      --success: oklch(0.7 0.16 155);
+      --success-foreground: oklch(0.16 0.02 155);
+      --warning: oklch(0.78 0.15 75);
+      --warning-foreground: oklch(0.2 0.03 75);
+      --destructive: oklch(0.62 0.21 22);
+      
+      --font-mono: ui-monospace, SFMono-Regular, SF Mono, Menlo, Monaco, Consolas, monospace;
     }
     * { box-sizing: border-box; }
     body {
       margin: 0;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-      background: var(--bg);
-      color: var(--fg);
+      background: var(--background);
+      color: var(--foreground);
       display: flex;
       flex-direction: column;
       height: 100vh;
       overflow: hidden;
-      
-      /* Typography: Font smoothing at root for crisper rendering on macOS */
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
     }
     header {
-      background: #161b22;
+      background: var(--card);
       border-bottom: 1px solid var(--border);
       padding: 0.75rem 1.5rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
       flex-shrink: 0;
+      height: 48px;
     }
     header h1 {
       margin: 0;
-      font-size: 1.25rem;
+      font-size: 0.9rem;
       font-weight: 600;
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      text-wrap: balance; /* Typography: Balanced heading lines */
+      text-wrap: balance;
     }
     .badge {
-      font-size: 0.75rem;
-      background: var(--primary);
-      color: #fff;
+      font-size: 0.7rem;
+      background: var(--secondary);
+      color: var(--muted-foreground);
       padding: 0.12rem 0.4rem;
-      border-radius: 8px; /* Concentric radius: nested badge */
-      font-weight: bold;
+      border-radius: 8px;
+      font-weight: 500;
+      font-family: var(--font-mono);
+      border: 1px solid var(--border);
     }
     main {
       display: flex;
@@ -87,11 +88,9 @@ export function renderIndex(): string {
     #left-pane {
       flex: 1;
       border-right: 1px solid var(--border);
-      background: var(--code-bg);
+      background: var(--background);
       display: flex;
       flex-direction: column;
-      
-      /* Animations: Smooth collapsible width transition */
       transition: width 200ms cubic-bezier(0.2, 0, 0, 1), min-width 200ms cubic-bezier(0.2, 0, 0, 1);
       min-width: 300px;
     }
@@ -99,19 +98,18 @@ export function renderIndex(): string {
     /* RIGHT PANE: Quiz Studio */
     #right-pane {
       width: 42%;
-      padding: 1.5rem;
       overflow-y: auto;
-      background: var(--bg);
-      
-      /* Animations: Smooth transition alongside left-pane */
+      background: var(--background);
       transition: width 200ms cubic-bezier(0.2, 0, 0, 1);
+      display: flex;
+      flex-direction: column;
     }
     
     /* Collapsed State modifications */
     .explorer-collapsed #left-pane {
       width: 40px !important;
       min-width: 40px !important;
-      background: #161b22;
+      background: var(--card);
     }
     .explorer-collapsed #right-pane {
       width: calc(100% - 40px) !important;
@@ -127,91 +125,75 @@ export function renderIndex(): string {
       border-bottom: none !important;
     }
     
-    .pane-title {
-      font-size: 0.9rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: #8b949e;
-      background: #161b22;
-      padding: 0.5rem 1rem;
-      border-bottom: 1px solid var(--border);
+    .pane-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      background: var(--card);
+      padding: 0.5rem 1rem;
+      height: 40px;
       flex-shrink: 0;
     }
+    .pane-title {
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted-foreground);
+    }
     
-    /* Surfaces: Concentric radius outer container */
+    /* Card layout matching shadcn / developer-training-studio */
     .card {
       background: var(--card);
-      border-radius: 12px; /* Concentric radius: outer card */
-      box-shadow: var(--shadow-border);
+      border: 1px solid var(--border);
+      border-radius: var(--radius, 10px);
       padding: 1.25rem;
       margin-bottom: 1rem;
-      transition: box-shadow 150ms ease-out;
+      transition: border-color 150ms ease-out;
     }
-    .card:hover {
-      box-shadow: var(--shadow-border-hover);
-    }
-    
-    /* Animations: Staggered enter transitions */
-    .stagger-item {
-      opacity: 0;
-      transform: translateY(8px);
-      animation: fadeInUp 250ms ease-out forwards;
-    }
-    @keyframes fadeInUp {
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-    .stagger-item:nth-child(1) { animation-delay: 0ms; }
-    .stagger-item:nth-child(2) { animation-delay: 60ms; }
-    .stagger-item:nth-child(3) { animation-delay: 120ms; }
-    .stagger-item:nth-child(4) { animation-delay: 180ms; }
     
     .interactive-item {
       cursor: pointer;
-      transition: background 150ms ease-out, border-color 150ms ease-out, scale 150ms ease-out;
     }
     .interactive-item:hover {
-      background: var(--accent);
+      border-color: rgba(255, 255, 255, 0.15);
     }
-    /* Animations: Scale on press (0.96) */
     .interactive-item:active {
-      scale: 0.96;
+      scale: 0.99;
     }
     
     .meta {
-      font-size: 0.8rem;
-      color: #8b949e;
+      font-size: 0.75rem;
+      color: var(--muted-foreground);
       margin-top: 0.25rem;
-      text-wrap: pretty; /* Typography: Pretty wrapping for subtexts */
+      font-family: var(--font-mono);
     }
     
-    /* Minimum Hit Area: Ensure buttons are at least 40px tall/wide */
     button {
-      background: var(--accent);
-      color: var(--fg);
+      background: var(--secondary);
+      color: var(--foreground);
       border: 1px solid var(--border);
-      height: 40px; /* Minimum hit area */
-      padding: 0 1rem;
-      border-radius: 6px; /* Concentric radius: nested buttons */
+      height: 32px;
+      padding: 0 0.75rem;
+      border-radius: 6px;
       cursor: pointer;
       font-weight: 500;
-      
-      /* Animations: Specify exact properties, never use transition:all */
+      font-size: 0.8rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
       transition-property: background-color, border-color, scale;
       transition-duration: 150ms;
       transition-timing-function: ease-out;
     }
     button:hover:not(:disabled) {
-      background: var(--accent-hover);
-      border-color: #8b949e;
+      background: var(--accent);
+      border-color: rgba(255, 255, 255, 0.15);
     }
     button:active:not(:disabled) {
-      scale: 0.96; /* Animations: Scale on press */
+      scale: 0.96;
     }
     button:disabled {
       opacity: 0.4;
@@ -220,291 +202,327 @@ export function renderIndex(): string {
     button.primary {
       background: var(--primary);
       border-color: var(--primary);
-      color: #fff;
+      color: var(--primary-foreground);
     }
     button.primary:hover:not(:disabled) {
-      background: #2ea043;
-      border-color: #2ea043;
+      background: oklch(0.67 0.17 250);
     }
+    button.outline {
+      background: transparent;
+      border-color: var(--border);
+    }
+    button.outline:hover:not(:disabled) {
+      background: var(--secondary);
+    }
+    
+    /* Interactive Question Choices matching QuestionCard */
     .options {
       display: flex;
       flex-direction: column;
-      gap: 0.75rem;
+      gap: 0.5rem;
       margin-top: 1rem;
     }
-    
-    /* Concentric Radius: Outer option-label */
-    .option-label {
+    .option-btn {
       display: flex;
       align-items: flex-start;
       gap: 0.75rem;
-      padding: 0.75rem;
-      background: #0d1117;
+      padding: 0.65rem 0.75rem;
+      background: transparent;
       border: 1px solid var(--border);
-      border-radius: 6px; /* Concentric: fits 12px card minus padding */
+      border-radius: 8px;
       cursor: pointer;
-      transition-property: border-color, background-color, scale;
+      text-align: left;
+      font-size: 0.85rem;
+      width: 100%;
+      height: auto;
+      transition-property: border-color, background-color;
       transition-duration: 150ms;
-      transition-timing-function: ease-out;
     }
-    .option-label:hover {
-      border-color: #8b949e;
+    .option-btn:hover:not(:disabled) {
+      border-color: rgba(255, 255, 255, 0.15);
       background: var(--accent);
     }
-    .option-label:active {
-      scale: 0.98; /* Animations: Subtle scale feedback */
-    }
-    .option-label input[type="radio"] {
-      margin-top: 0.2rem;
-    }
-    textarea {
-      width: 100%;
-      min-height: 120px;
-      background: #0d1117;
-      color: var(--fg);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 0.75rem;
-      font-family: inherit;
-      resize: vertical;
-      transition-property: border-color;
-      transition-duration: 150ms;
-    }
-    textarea:focus {
-      outline: none;
+    .option-btn.selected {
       border-color: var(--primary);
+      background: rgba(31, 111, 235, 0.1);
     }
-    .correct-alert {
-      border-left: 4px solid var(--ok);
-      padding-left: 0.75rem;
-      color: #3fb950;
+    .option-btn.correct {
+      border-color: var(--success);
+      background: rgba(35, 134, 54, 0.12);
     }
-    .incorrect-alert {
-      border-left: 4px solid var(--bad);
-      padding-left: 0.75rem;
-      color: #f85149;
+    .option-btn.incorrect {
+      border-color: var(--destructive);
+      background: rgba(248, 81, 73, 0.12);
     }
+    .option-badge {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      flex-shrink: 0;
+      margin-top: 0.1rem;
+    }
+    .option-btn.selected .option-badge {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+    .option-btn.correct .option-badge {
+      border-color: var(--success);
+      background: var(--success);
+      color: var(--success-foreground);
+    }
+    .option-btn.incorrect .option-badge {
+      border-color: var(--destructive);
+      background: var(--destructive);
+      color: var(--foreground);
+    }
+    
+    /* Code Viewer highlighting and status tags */
     .code-viewer-container {
       display: flex;
       flex: 1;
       overflow: hidden;
+      background: var(--code-bg);
     }
-    /* @pierre/trees integration overrides */
     .file-tree {
       width: 250px;
       border-right: 1px solid var(--border);
       overflow-y: auto;
-      background: #0d1117;
-      padding: 0.75rem 0.5rem;
-      user-select: none;
+      background: var(--background);
+      padding: 0.5rem 0.25rem;
     }
     .code-editor {
       flex: 1;
       overflow: auto;
       margin: 0;
-      padding: 1rem;
+      padding: 0.5rem 0;
       font-family: var(--font-mono);
-      font-size: 0.85rem;
-      line-height: 1.5;
+      font-size: 13px;
+      line-height: 1.6;
       background: var(--code-bg);
     }
     .code-line {
       display: flex;
-      white-space: pre-wrap;
+      white-space: pre;
+      min-width: max-content;
     }
     .line-number {
-      width: 3rem;
+      width: 3.2rem;
       text-align: right;
-      color: #484f58;
-      padding-right: 1rem;
+      color: var(--muted-foreground);
+      padding-right: 0.75rem;
       user-select: none;
-      border-right: 1px solid #21262d;
+      border-right: 1px solid var(--border);
       margin-right: 1rem;
-      
-      /* Typography: Tabular numbers for clean code line offsets */
       font-variant-numeric: tabular-nums;
+      opacity: 0.6;
     }
     .code-text {
       flex: 1;
+      padding-right: 1.5rem;
     }
     .highlighted-line {
-      background: rgba(31, 111, 235, 0.15);
-      border-left: 3px solid var(--primary);
+      background: rgba(31, 111, 235, 0.12);
     }
     .highlighted-line .line-number {
-      color: var(--fg);
-      background: rgba(31, 111, 235, 0.2);
+      color: var(--primary);
+      border-right-color: rgba(31, 111, 235, 0.4);
     }
-    .search-bar {
-      margin-bottom: 1rem;
-      display: flex;
-      gap: 0.5rem;
-    }
-    .search-bar input {
-      flex: 1;
-      background: var(--card);
-      border: 1px solid var(--border);
-      padding: 0.5rem;
-      border-radius: 6px;
-      color: var(--fg);
-      height: 40px; /* Minimum hit area */
-      transition-property: border-color;
-      transition-duration: 150ms;
-    }
-    .search-bar input:focus {
-      outline: none;
-      border-color: var(--primary);
-    }
+    
+    /* Feedback Dashboard Stats cards */
     .dashboard-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 1rem;
-      margin-bottom: 1.5rem;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
     }
-    
-    /* Concentric Radius: Outer grid cards */
     .stat-card {
-      background: var(--card);
+      background: rgba(255, 255, 255, 0.02);
       border: 1px solid var(--border);
-      padding: 1rem;
-      border-radius: 10px; /* Concentric: outer parent grid */
-      text-align: center;
+      padding: 0.65rem 0.75rem;
+      border-radius: 8px;
     }
-    
-    /* Typography: Tabular numbers for counters/scores */
+    .stat-lbl {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted-foreground);
+    }
     .stat-val {
-      font-size: 1.8rem;
+      font-size: 1.25rem;
       font-weight: bold;
-      color: var(--primary);
-      margin-top: 0.25rem;
+      margin-top: 0.15rem;
+      font-family: var(--font-mono);
       font-variant-numeric: tabular-nums;
     }
-    .hidden { display: none !important; }
-    .trace-link {
-      color: var(--primary);
-      text-decoration: underline;
-      cursor: pointer;
-      font-size: 0.85rem;
+    .progress-bar-container {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.75rem;
+    }
+    .progress-track {
+      height: 6px;
+      border-radius: 9999px;
+      background: var(--secondary);
+      overflow: hidden;
       margin-top: 0.5rem;
+    }
+    .progress-fill {
+      height: 100%;
+      border-radius: 9999px;
+      background: var(--primary);
+      transition: width 300ms ease-out;
+    }
+    .progress-kind-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-top: 0.5rem;
+    }
+    .progress-kind-lbl {
+      width: 80px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--muted-foreground);
+      text-transform: capitalize;
+    }
+    
+    .hidden { display: none !important; }
+    .trace-badge {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--muted-foreground);
+      border: 1px solid var(--border);
+      padding: 0.15rem 0.4rem;
+      border-radius: 6px;
+      cursor: pointer;
       display: inline-flex;
       align-items: center;
       gap: 0.3rem;
+      transition: border-color 150ms;
     }
-    .action-row {
-      display: flex;
-      gap: 0.5rem;
-      margin-top: 1rem;
+    .trace-badge:hover {
+      border-color: var(--primary);
+      color: var(--primary);
     }
-    
-    /* Typography: Pretty wrapping for prompts & titles */
-    #question-prompt {
-      text-wrap: pretty;
+    .kind-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.12rem 0.4rem;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 500;
     }
-    h2 {
-      text-wrap: balance;
-    }
+    .kind-code { color: var(--primary); background: rgba(31, 111, 235, 0.12); }
+    .kind-plan-vs-code { color: var(--warning); background: rgba(186, 122, 0, 0.12); }
+    .kind-concept { color: var(--success); background: rgba(35, 134, 54, 0.12); }
   </style>
-  
-  <!-- Import @pierre/trees styles directly from jsDelivr -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@pierre/trees/dist/index.css" />
+  <link rel="stylesheet" href="/assets/trees.css" />
 </head>
 <body>
   <header>
     <h1>quiz-me <span class="badge">Developer Studio</span></h1>
-    <div id="header-meta" class="meta"></div>
+    <div style="display: flex; align-items: center; gap: 0.75rem;">
+      <div class="meta" id="session-meta"></div>
+    </div>
   </header>
 
   <main id="app-container">
     <!-- LEFT PANE: Codebase Explorer & Trace Viewer -->
     <div id="left-pane" class="pane">
-      <div class="pane-title">
-        <span>Codebase Explorer & Trace Viewer</span>
-        <div style="display: flex; align-items: center;">
-          <span id="active-file-path" class="meta" style="margin-right: 0.75rem;">No file open</span>
-          <button id="toggle-explorer-btn" style="height: 28px; padding: 0 0.5rem; font-size: 0.75rem; border-radius: 4px;">◀ Collapse</button>
+      <div class="pane-header">
+        <span class="pane-title">Codebase Explorer</span>
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <span id="active-file-path" class="meta" style="margin-right: 0.25rem;">No file open</span>
+          <button id="toggle-explorer-btn" style="height: 24px; padding: 0 0.4rem; font-size: 0.7rem; border-radius: 4px;">◀ Collapse</button>
         </div>
       </div>
       <div class="code-viewer-container">
-        <div class="file-tree" id="explorer-tree">
-          <div style="font-size:0.8rem; color:#8b949e; padding:0.5rem;">No files loaded.</div>
-        </div>
-        <pre class="code-editor" id="code-content"><code style="color:#484f58;">Select a file to inspect lines, or click "Trace Source Code" in a question to highlight grounded code sections.</code></pre>
+        <div class="file-tree" id="explorer-tree"></div>
+        <pre class="code-editor" id="code-content"><code style="color:var(--muted-foreground);">Select a file to inspect lines, or click a location pin in a question card to highlight code lines.</code></pre>
       </div>
     </div>
 
-    <!-- RIGHT PANE: Quiz Studio -->
+    <!-- RIGHT PANE: Quiz Studio (All question cards rendered in a scrollable container) -->
     <div id="right-pane" class="pane">
       <!-- LIST VIEW -->
-      <section id="list-view">
-        <div class="search-bar stagger-item">
+      <section id="list-view" style="padding: 1.5rem;">
+        <div class="search-bar">
           <input type="text" id="search-input" placeholder="Search quizzes..." />
           <button id="refresh-btn">Refresh</button>
         </div>
-        <div id="quiz-list" class="stagger-item"></div>
+        <div id="quiz-list"></div>
       </section>
 
-      <!-- TAKE VIEW -->
-      <section id="take-view" class="hidden">
-        <div class="card stagger-item">
-          <h2 id="quiz-title" style="margin-bottom: 0.5rem;"></h2>
+      <!-- TAKE VIEW (Scrollable questions card stack + Dashboard) -->
+      <section id="take-view" class="hidden" style="display: flex; flex-direction: column; height: 100%;">
+        <div class="pane-header">
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span class="pane-title">Quiz Studio</span>
+            <span id="total-questions-badge" class="badge"></span>
+          </div>
+          <button id="reset-btn" class="outline" style="height: 24px; padding: 0 0.5rem; font-size: 0.7rem;">Reset Session</button>
+        </div>
+        
+        <!-- Live Feedback Dashboard -->
+        <div style="border-bottom: 1px solid var(--border); padding: 1rem; flex-shrink: 0; background: rgba(255,255,255,0.01);">
+          <div class="dashboard-grid">
+            <div class="stat-card">
+              <div class="stat-lbl">Answered</div>
+              <div id="stat-answered" class="stat-val">0/0</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-lbl">Accuracy</div>
+              <div id="stat-accuracy" class="stat-val">0%</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-lbl">Correct</div>
+              <div id="stat-correct" class="stat-val">0</div>
+            </div>
+          </div>
           
-          <!-- Typography: Tabular numbers for questions counters -->
-          <div id="progress" class="meta" style="margin-bottom: 1rem; font-variant-numeric: tabular-nums;"></div>
-          
-          <div id="question-prompt" style="font-size: 1.1rem; font-weight: 500; line-height: 1.4;"></div>
-          <div id="trace-indicator"></div>
-          <div id="question-options" class="options"></div>
-          
-          <div class="action-row">
-            <button id="prev-btn">Previous</button>
-            <button id="next-btn">Next</button>
-            <button id="submit-btn" class="primary hidden">Submit Answers</button>
-            <button id="back-btn">Back to List</button>
+          <div class="progress-bar-container">
+            <div style="display: flex; align-items: center; justify-content: space-between; font-size: 11px;">
+              <span class="stat-lbl">Session Progress</span>
+              <span id="stat-progress-pct" class="meta">0%</span>
+            </div>
+            <div class="progress-track">
+              <div id="stat-progress-bar" class="progress-fill" style="width: 0%;"></div>
+            </div>
+            <div id="kind-progress-container" style="margin-top: 0.75rem;"></div>
           </div>
         </div>
-      </section>
 
-      <!-- RESULTS VIEW -->
-      <section id="results-view" class="hidden">
-        <h2 class="stagger-item">Quiz Results Summary</h2>
-        <div class="dashboard-grid stagger-item">
-          <div class="stat-card">
-            <div>Score Percentage</div>
-            <div id="stat-score" class="stat-val">0%</div>
-          </div>
-          <div class="stat-card">
-            <div>Auto-Graded</div>
-            <div id="stat-graded" class="stat-val">0 / 0</div>
-          </div>
-          <div class="stat-card">
-            <div>Short Answer Self-Grade</div>
-            <div id="stat-self" class="stat-val">0</div>
-          </div>
-        </div>
-        <div id="review-list" class="stagger-item"></div>
-        <button id="results-back-btn" class="primary stagger-item">Back to List</button>
+        <!-- Question Cards Container -->
+        <div id="questions-list-container" style="flex: 1; overflow-y: auto; padding: 1rem; space-y: 1rem;"></div>
       </section>
     </div>
   </main>
 
   <!-- Import @pierre/trees natively as ES Module -->
   <script type="module">
-    import { FileTree } from "https://cdn.jsdelivr.net/npm/@pierre/trees/+esm";
+    import { FileTree } from "/assets/trees/index.js";
 
     window._fileTreeInstance = null;
 
-    // Expose init function to standard script
     window.initPierreTree = function(paths, onSelectCallback) {
       const container = document.getElementById('explorer-tree');
       if (!container) return;
 
       container.innerHTML = '';
       if (!paths || !paths.length) {
-        container.innerHTML = '<div style="font-size:0.8rem; color:#8b949e; padding:0.5rem;">No files available in this quiz scope.</div>';
+        container.innerHTML = '<div style="font-size:0.8rem; color:var(--muted-foreground); padding:0.5rem;">No files loaded.</div>';
         return;
       }
 
-      // Instantiate FileTree using @pierre/trees
       window._fileTreeInstance = new FileTree({
         paths: paths,
         search: false,
@@ -517,13 +535,12 @@ export function renderIndex(): string {
       window._fileTreeInstance.render({ fileTreeContainer: container });
     };
 
-    // Expose programatic focus selection for tracing
     window.focusPierreTreePath = function(path) {
       if (window._fileTreeInstance && typeof window._fileTreeInstance.focusPath === 'function') {
         try {
           window._fileTreeInstance.focusPath(path);
         } catch (e) {
-          console.warn('Failed to programmatically focus path', e);
+          console.warn('Failed to focus path', e);
         }
       }
     };
@@ -532,41 +549,18 @@ export function renderIndex(): string {
   <script>
     let quizzes = [];
     let currentQuiz = null;
-    let currentIndex = 0;
     let answers = {};
     let activeFilePath = null;
     let filesData = [];
     let isExplorerCollapsed = false;
 
-    // Initialize application
     window.addEventListener('load', () => {
       loadQuizzes();
       document.getElementById('refresh-btn').addEventListener('click', loadQuizzes);
       document.getElementById('search-input').addEventListener('input', filterQuizzes);
-      document.getElementById('prev-btn').addEventListener('click', prevQuestion);
-      document.getElementById('next-btn').addEventListener('click', nextQuestion);
-      document.getElementById('submit-btn').addEventListener('click', submitQuiz);
-      document.getElementById('back-btn').addEventListener('click', () => show('list-view'));
-      document.getElementById('results-back-btn').addEventListener('click', () => show('list-view'));
-      
-      // Collapsible logic
+      document.getElementById('reset-btn').addEventListener('click', resetQuiz);
       document.getElementById('toggle-explorer-btn').addEventListener('click', toggleExplorer);
     });
-
-    function toggleExplorer() {
-      isExplorerCollapsed = !isExplorerCollapsed;
-      const app = document.getElementById('app-container');
-      const btn = document.getElementById('toggle-explorer-btn');
-      
-      app.classList.toggle('explorer-collapsed', isExplorerCollapsed);
-      if (isExplorerCollapsed) {
-        btn.textContent = '▶';
-        btn.title = 'Expand Explorer';
-      } else {
-        btn.textContent = '◀ Collapse';
-        btn.title = 'Collapse Explorer';
-      }
-    }
 
     async function loadQuizzes() {
       try {
@@ -587,7 +581,7 @@ export function renderIndex(): string {
       }
       el.innerHTML = list.map(q => \`
         <div class="card interactive-item" onclick="startQuiz('\${q.id}')">
-          <div style="font-size: 1.1rem; font-weight: 600; margin-bottom: 0.25rem;">\${escapeHtml(q.summary)}</div>
+          <div style="font-size: 1rem; font-weight: 600; margin-bottom: 0.25rem;">\${escapeHtml(q.summary)}</div>
           <div class="meta">
             <span>Scope: <strong>\${q.scope}</strong></span> &middot;
             <span>Questions: <strong>\${q.questions.length}</strong></span> &middot;
@@ -603,8 +597,16 @@ export function renderIndex(): string {
       renderQuizList(filtered);
     }
 
+    function toggleExplorer() {
+      isExplorerCollapsed = !isExplorerCollapsed;
+      const app = document.getElementById('app-container');
+      const btn = document.getElementById('toggle-explorer-btn');
+      app.classList.toggle('explorer-collapsed', isExplorerCollapsed);
+      btn.textContent = isExplorerCollapsed ? '▶' : '◀ Collapse';
+    }
+
     function show(viewId) {
-      ['list-view', 'take-view', 'results-view'].forEach(id => {
+      ['list-view', 'take-view'].forEach(id => {
         document.getElementById(id).classList.toggle('hidden', id !== viewId);
       });
       if (viewId === 'list-view') {
@@ -612,7 +614,7 @@ export function renderIndex(): string {
         currentQuiz = null;
         filesData = [];
         renderFileTree();
-        document.getElementById('code-content').innerHTML = '<code style="color:#484f58;">Select a file to inspect lines, or click \"Trace Source Code\" in a question to highlight grounded code sections.</code>';
+        document.getElementById('code-content').innerHTML = '<code style="color:var(--muted-foreground);">Select a file to inspect lines, or click a location pin in a question card to highlight code lines.</code>';
         document.getElementById('active-file-path').textContent = 'No file open';
       }
     }
@@ -621,24 +623,33 @@ export function renderIndex(): string {
       try {
         const res = await fetch('/api/quizzes/' + id);
         currentQuiz = await res.json();
-        currentIndex = 0;
         answers = {};
+        
+        // Restore answers
+        currentQuiz.questions.forEach(q => {
+          answers[q.id] = { value: undefined, submitted: false };
+        });
+
         location.hash = '/quiz/' + id;
         
-        // Parse the codefiles
         if (currentQuiz.filesJson) {
-          try {
-            filesData = JSON.parse(currentQuiz.filesJson);
-          } catch (e) {
-            filesData = [];
-          }
+          try { filesData = JSON.parse(currentQuiz.filesJson); } catch (e) { filesData = []; }
         } else {
           filesData = [];
         }
 
         renderFileTree();
         show('take-view');
-        renderQuestion();
+        
+        // Render headers and dashboard
+        document.getElementById('session-meta').innerHTML = \`
+          <span>scope: <strong>\${currentQuiz.scope}</strong></span> &middot;
+          <span>digest: <strong>\${currentQuiz.contextDigest.slice(0, 8)}</strong></span>
+        \`;
+        document.getElementById('total-questions-badge').textContent = currentQuiz.questions.length + ' questions';
+        
+        renderQuestionStack();
+        updateDashboard();
       } catch (err) {
         console.error('Failed to load quiz details', err);
       }
@@ -646,12 +657,10 @@ export function renderIndex(): string {
 
     function renderFileTree() {
       if (typeof window.initPierreTree === 'function') {
-        const paths = filesData.map(f => f.path);
-        window.initPierreTree(paths, (path) => {
+        window.initPierreTree(filesData.map(f => f.path), (path) => {
           openFile(path);
         });
       } else {
-        // Fallback if ESM script not initialized yet
         setTimeout(renderFileTree, 100);
       }
     }
@@ -659,38 +668,27 @@ export function renderIndex(): string {
     function openFile(path, highlightLines = null) {
       activeFilePath = path;
       document.getElementById('active-file-path').textContent = path;
-      
-      // Auto-expand explorer if a trace link is clicked when collapsed
-      if (isExplorerCollapsed && highlightLines) {
-        toggleExplorer();
-      }
-
-      // Sync focus with @pierre/trees
-      if (typeof window.focusPierreTreePath === 'function') {
-        window.focusPierreTreePath(path);
-      }
+      if (isExplorerCollapsed && highlightLines) toggleExplorer();
+      if (typeof window.focusPierreTreePath === 'function') window.focusPierreTreePath(path);
 
       const f = filesData.find(x => x.path === path);
       if (!f) {
-        document.getElementById('code-content').innerHTML = '<code style="color:#da3633;">File content not available.</code>';
+        document.getElementById('code-content').innerHTML = '<code style="color:var(--destructive);">File content not available.</code>';
         return;
       }
 
       const lines = f.content.split('\\n');
       const container = document.getElementById('code-content');
       container.innerHTML = '';
-
       let targetEl = null;
 
       lines.forEach((line, idx) => {
         const lineNum = idx + 1;
         const lineDiv = document.createElement('div');
         lineDiv.className = 'code-line';
-        
         const numSpan = document.createElement('span');
         numSpan.className = 'line-number';
         numSpan.textContent = lineNum;
-        
         const textSpan = document.createElement('span');
         textSpan.className = 'code-text';
         textSpan.textContent = line;
@@ -702,156 +700,280 @@ export function renderIndex(): string {
           lineDiv.className += ' highlighted-line';
           if (!targetEl) targetEl = lineDiv;
         }
-
         container.appendChild(lineDiv);
       });
 
       if (targetEl) {
-        setTimeout(() => {
-          targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }, 100);
+        setTimeout(() => targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
       }
     }
 
-    function renderQuestion() {
-      const q = currentQuiz.questions[currentIndex];
-      const total = currentQuiz.questions.length;
-      
-      document.getElementById('quiz-title').textContent = currentQuiz.summary;
-      document.getElementById('progress').innerHTML = \`Question \${currentIndex + 1} / \${total} &middot; Difficulty: \${q.difficulty} &middot; Category: \${q.kind}\`;
-      document.getElementById('question-prompt').textContent = q.prompt;
+    function renderQuestionStack() {
+      const container = document.getElementById('questions-list-container');
+      container.innerHTML = '';
 
-      const traceEl = document.getElementById('trace-indicator');
-      traceEl.innerHTML = '';
-      if (q.codeRef && q.codeRef.path) {
-        traceEl.innerHTML = \`
-          <div class="trace-link" onclick="openFile('\${escapeJs(q.codeRef.path)}', {start: \${q.codeRef.startLine}, end: \${q.codeRef.endLine}})">
-            🔍 Trace source code: \${q.codeRef.path} (Lines \${q.codeRef.startLine}-\${q.codeRef.endLine})
-          </div>
-        \`;
-        // Auto-open trace file
-        openFile(q.codeRef.path, { start: q.codeRef.startLine, end: q.codeRef.endLine });
-      }
-
-      const optionsContainer = document.getElementById('question-options');
-      optionsContainer.innerHTML = '';
-
-      if (q.type === 'multiple-choice' && q.options) {
-        optionsContainer.innerHTML = q.options.map(opt => \`
-          <label class="option-label">
-            <input type="radio" name="option" value="\${escapeHtml(opt)}" \${answers[q.id] === opt ? 'checked' : ''} onchange="saveAnswer('\${q.id}', this.value)" />
-            <span>\${escapeHtml(opt)}</span>
-          </label>
-        \`).join('');
-      } else if (q.type === 'true-false') {
-        optionsContainer.innerHTML = ['true', 'false'].map(val => \`
-          <label class="option-label">
-            <input type="radio" name="option" value="\${val}" \${answers[q.id] === val ? 'checked' : ''} onchange="saveAnswer('\${q.id}', this.value)" />
-            <span>\${val}</span>
-          </label>
-        \`).join('');
-      } else {
-        const txt = document.createElement('textarea');
-        txt.placeholder = 'Type your answer here...';
-        txt.value = answers[q.id] || '';
-        txt.oninput = (e) => saveAnswer(q.id, e.target.value);
-        optionsContainer.appendChild(txt);
-      }
-
-      document.getElementById('prev-btn').disabled = currentIndex === 0;
-      document.getElementById('next-btn').classList.toggle('hidden', currentIndex === total - 1);
-      document.getElementById('submit-btn').classList.toggle('hidden', currentIndex !== total - 1);
-    }
-
-    function saveAnswer(qId, val) {
-      answers[qId] = val;
-    }
-
-    // Helper functions
-    function prevQuestion() {
-      if (currentIndex > 0) {
-        currentIndex--;
-        renderQuestion();
-      }
-    }
-
-    function nextQuestion() {
-      if (currentIndex < currentQuiz.questions.length - 1) {
-        currentIndex++;
-        renderQuestion();
-      }
-    }
-
-    async function submitQuiz() {
-      const payload = {
-        answers: currentQuiz.questions.map(q => ({
-          questionId: q.id,
-          given: answers[q.id] || ''
-        }))
-      };
-      try {
-        const res = await fetch(\`/api/quizzes/\${currentQuiz.id}/attempts\`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        const attempt = await res.json();
-        renderResults(attempt);
-      } catch (err) {
-        console.error('Failed to submit attempt', err);
-      }
-    }
-
-    function renderResults(attempt) {
-      const auto = attempt.answers.filter(a => {
-        const q = currentQuiz.questions.find(x => x.id === a.questionId);
-        return q && q.type !== 'short-answer';
-      });
-      const correct = auto.filter(a => a.correct).length;
-      const pct = auto.length ? Math.round((correct / auto.length) * 100) : 0;
-
-      document.getElementById('stat-score').textContent = pct + '%';
-      document.getElementById('stat-graded').textContent = correct + ' / ' + auto.length;
-      document.getElementById('stat-self').textContent = attempt.answers.length - auto.length;
-
-      const reviewContainer = document.getElementById('review-list');
-      reviewContainer.innerHTML = currentQuiz.questions.map(q => {
-        const a = attempt.answers.find(x => x.questionId === q.id);
-        const traceLink = q.codeRef && q.codeRef.path 
-          ? \`<div class="trace-link" style="margin-top:0.25rem;" onclick="openFile('\${escapeJs(q.codeRef.path)}', {start:\${q.codeRef.startLine}, end:\${q.codeRef.endLine}})">🔍 Trace source: \${q.codeRef.path} (Lines \${q.codeRef.startLine}-\${q.codeRef.endLine})</div>\`
-          : '';
-
-        let gradingHtml = '';
-        if (q.type === 'short-answer') {
-          gradingHtml = \`
-            <div class="meta" style="margin-top: 0.5rem; border-top: 1px solid var(--border); padding-top: 0.5rem;">
-              <strong>Model Expected Answer:</strong>
-              <div style="font-family: var(--font-mono); font-size:0.85rem; margin-top:0.25rem; background:#0d1117; padding:0.5rem; border-radius:4px;">\${escapeHtml(q.answer)}</div>
-            </div>
+      currentQuiz.questions.forEach((q, idx) => {
+        const card = document.createElement('article');
+        card.id = 'card-' + q.id;
+        card.className = 'card';
+        card.style.marginBottom = '1rem';
+        
+        const ans = answers[q.id] || { submitted: false };
+        const graded = ans.submitted;
+        
+        let traceHtml = '';
+        if (q.codeRef && q.codeRef.path) {
+          traceHtml = \`
+            <span class="trace-badge" onclick="openFile('\${escapeJs(q.codeRef.path)}', {start: \${q.codeRef.startLine}, end: \${q.codeRef.endLine}})">
+              📍 \${q.codeRef.path.split('/').pop()}:\${q.codeRef.startLine}
+            </span>
           \`;
+        }
+
+        let kindClass = 'kind-code';
+        let kindLabel = 'Code';
+        if (q.kind === 'plan-vs-code') {
+          kindClass = 'kind-plan-vs-code';
+          kindLabel = 'Plan vs Code';
+        } else if (q.kind === 'concept') {
+          kindClass = 'kind-concept';
+          kindLabel = 'Concept';
+        }
+
+        let optionsHtml = '';
+        if (q.type === 'multiple-choice' && q.options) {
+          optionsHtml = '<div class="options">';
+          q.options.forEach((opt, oIdx) => {
+            const isSelected = ans.value === String(oIdx);
+            const isCorrectAnswer = graded && String(oIdx) === q.answer;
+            const isWrongSelection = graded && isSelected && String(oIdx) !== q.answer;
+            
+            let btnClass = '';
+            if (isCorrectAnswer) btnClass = 'correct';
+            else if (isWrongSelection) btnClass = 'incorrect';
+            else if (isSelected) btnClass = 'selected';
+
+            const badgeContent = isCorrectAnswer ? '✓' : isWrongSelection ? '✗' : String.fromCharCode(65 + oIdx);
+            optionsHtml += \`
+              <button class="option-btn \${btnClass}" \${graded ? 'disabled' : ''} onclick="handleAnswer('\${q.id}', '\${oIdx}')">
+                <span class="option-badge">\${badgeContent}</span>
+                <span>\${escapeHtml(opt)}</span>
+              </button>
+            \`;
+          });
+          optionsHtml += '</div>';
+        } else if (q.type === 'true-false') {
+          optionsHtml = '<div class="options" style="flex-direction:row;">';
+          ['true', 'false'].forEach(val => {
+            const isSelected = ans.value === val;
+            const isCorrectAnswer = graded && val === q.answer;
+            const isWrongSelection = graded && isSelected && val !== q.answer;
+
+            let btnClass = '';
+            if (isCorrectAnswer) btnClass = 'correct';
+            else if (isWrongSelection) btnClass = 'incorrect';
+            else if (isSelected) btnClass = 'selected';
+
+            optionsHtml += \`
+              <button class="option-btn \${btnClass}" style="justify-content:center;" \${graded ? 'disabled' : ''} onclick="handleAnswer('\${q.id}', '\${val}')">
+                \${val.toUpperCase()}
+              </button>
+            \`;
+          });
+          optionsHtml += '</div>';
         } else {
-          const isCorrect = a ? a.correct : false;
-          gradingHtml = \`
-            <div class="\${isCorrect ? 'correct-alert' : 'incorrect-alert'}" style="margin-top: 0.5rem; font-weight: 500;">
-              \${isCorrect ? 'Correct' : 'Incorrect &middot; Correct Answer: ' + escapeHtml(q.answer)}
+          optionsHtml = \`
+            <div class="options">
+              <textarea \${graded ? 'disabled' : ''} oninput="handleAnswer('\${q.id}', this.value)" placeholder="Type your answer here..." style="font-size:13px; font-family:var(--font-mono);">\${ans.value || ''}</textarea>
             </div>
           \`;
         }
 
-        return \`
-          <div class="card">
-            <div style="font-weight: 600; margin-bottom:0.25rem;">\${escapeHtml(q.prompt)}</div>
-            \${traceLink}
-            <div style="font-size:0.9rem; margin-top:0.5rem;">Your answer: <em>\${escapeHtml(a ? a.given : '(No answer)')}</em></div>
-            \${gradingHtml}
-            <div class="meta" style="margin-top:0.5rem; background: var(--accent); padding:0.5rem; border-radius:4px;">
-              <strong>Explanation:</strong> \${escapeHtml(q.explanation)}
+        let feedbackHtml = '';
+        if (graded) {
+          const correct = q.type === 'short-answer' ? ans.selfGrade === 'correct' : ans.value === q.answer;
+          
+          let alertHtml = '';
+          if (q.type !== 'short-answer') {
+            alertHtml = \`
+              <div class="\${correct ? 'correct-alert' : 'incorrect-alert'}" style="font-weight: 500; font-size:0.85rem; margin-top:0.5rem;">
+                \${correct ? 'Correct' : 'Incorrect &middot; Correct Answer: ' + escapeHtml(q.answer)}
+              </div>
+            \`;
+          }
+
+          let selfGradeHtml = '';
+          if (q.type === 'short-answer') {
+            selfGradeHtml = \`
+              <div class="meta" style="margin-top:0.5rem; border-top:1px solid var(--border); padding-top:0.5rem;">
+                <strong>Expected Model Answer:</strong>
+                <div style="font-family: var(--font-mono); font-size:12px; margin-top:0.25rem; background:rgba(0,0,0,0.2); padding:0.5rem; border-radius:4px; border:1px solid var(--border);">\${escapeHtml(q.answer)}</div>
+              </div>
+            \`;
+            if (!ans.selfGrade) {
+              selfGradeHtml += \`
+                <div style="margin-top:0.75rem;">
+                  <p class="meta" style="margin-bottom:0.4rem;">How did your answer compare?</p>
+                  <div style="display:flex; gap:0.5rem;">
+                    <button class="primary" style="height:28px;" onclick="handleSelfGrade('\${q.id}', 'correct')">Got it</button>
+                    <button class="outline" style="height:28px;" onclick="handleSelfGrade('\${q.id}', 'incorrect')">Missed it</button>
+                  </div>
+                </div>
+              \`;
+            } else {
+              selfGradeHtml += \`
+                <div class="\${ans.selfGrade === 'correct' ? 'correct-alert' : 'incorrect-alert'}" style="font-weight: 500; font-size:0.85rem; margin-top:0.5rem;">
+                  Self-Graded: \${ans.selfGrade === 'correct' ? 'Correct' : 'Incorrect'}
+                </div>
+              \`;
+            }
+          }
+
+          feedbackHtml = \`
+            <div style="margin-top:0.75rem; border-top:1px solid var(--border); padding-top:0.75rem;">
+              \${alertHtml}
+              \${selfGradeHtml}
+              <div class="meta" style="margin-top:0.5rem; background: rgba(255,255,255,0.02); border:1px solid var(--border); padding:0.5rem; border-radius:6px;">
+                <strong>Explanation:</strong> \${escapeHtml(q.explanation)}
+              </div>
             </div>
+          \`;
+        } else {
+          feedbackHtml = \`
+            <button class="primary" id="submit-btn-\${q.id}" style="margin-top:0.75rem; height:28px;" \${!ans.value ? 'disabled' : ''} onclick="handleSubmitQuestion('\${q.id}')">
+              \${q.type === 'short-answer' ? 'Reveal model answer' : 'Check answer'}
+            </button>
+          \`;
+        }
+
+        card.innerHTML = \`
+          <div style="display: flex; align-items: center; justify-content: space-between; border-bottom:1px solid var(--border); padding-bottom:0.5rem; margin-bottom:0.75rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span style="font-family: var(--font-mono); font-size:11px; font-weight:bold; color:var(--muted-foreground);">Q\${idx + 1}</span>
+              <span class="kind-badge \${kindClass}">\${kindLabel}</span>
+              <span class="badge" style="background:transparent;">\${q.difficulty.toUpperCase()}</span>
+            </div>
+            \${traceHtml}
+          </div>
+          <div style="font-size: 0.9rem; line-height: 1.5; color: var(--foreground);">\${escapeHtml(q.prompt)}</div>
+          \${optionsHtml}
+          \${feedbackHtml}
+        \`;
+        
+        container.appendChild(card);
+      });
+    }
+
+    window.handleAnswer = function(qId, val) {
+      if (!answers[qId]) answers[qId] = { submitted: false };
+      answers[qId].value = val;
+      
+      const btn = document.getElementById('submit-btn-' + qId);
+      if (btn) btn.disabled = !val;
+
+      const q = currentQuiz.questions.find(x => x.id === qId);
+      if (q && q.type !== 'short-answer') {
+        const labels = document.querySelectorAll('#card-' + qId + ' .option-btn');
+        labels.forEach((lbl, idx) => {
+          const isSelected = String(idx) === val || lbl.textContent.trim().toLowerCase() === val;
+          lbl.classList.toggle('selected', isSelected);
+        });
+      }
+    };
+
+    window.handleSubmitQuestion = function(qId) {
+      if (!answers[qId] || !answers[qId].value) return;
+      answers[qId].submitted = true;
+      renderQuestionStack();
+      updateDashboard();
+      saveAttempt();
+    };
+
+    window.handleSelfGrade = function(qId, grade) {
+      if (!answers[qId]) return;
+      answers[qId].selfGrade = grade;
+      renderQuestionStack();
+      updateDashboard();
+      saveAttempt();
+    };
+
+    async function saveAttempt() {
+      // Auto-save attempt when questions are checked
+      const payload = {
+        answers: currentQuiz.questions.map(q => ({
+          questionId: q.id,
+          given: (answers[q.id] && answers[q.id].value) || ''
+        }))
+      };
+      try {
+        await fetch(\`/api/quizzes/\${currentQuiz.id}/attempts\`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+      } catch (e) {
+        console.warn('Failed to auto-save attempt to SQLite database', e);
+      }
+    }
+
+    function resetQuiz() {
+      if (!currentQuiz) return;
+      answers = {};
+      currentQuiz.questions.forEach(q => {
+        answers[q.id] = { value: undefined, submitted: false };
+      });
+      renderQuestionStack();
+      updateDashboard();
+    }
+
+    function updateDashboard() {
+      const total = currentQuiz.questions.length;
+      let answered = 0;
+      let correct = 0;
+      const byKind = {};
+
+      currentQuiz.questions.forEach(q => {
+        byKind[q.kind] = byKind[q.kind] || { total: 0, correct: 0, answered: 0 };
+        byKind[q.kind].total++;
+
+        const ans = answers[q.id];
+        const isAnswered = ans && ans.submitted && (q.type !== 'short-answer' || ans.selfGrade);
+        
+        if (isAnswered) {
+          answered++;
+          byKind[q.kind].answered++;
+          const ok = q.type === 'short-answer' ? ans.selfGrade === 'correct' : ans.value === q.answer;
+          if (ok) {
+            correct++;
+            byKind[q.kind].correct++;
+          }
+        }
+      });
+
+      const accuracy = answered > 0 ? Math.round((correct / answered) * 100) : 0;
+      const progress = Math.round((answered / total) * 100);
+
+      document.getElementById('stat-answered').textContent = answered + ' / ' + total;
+      document.getElementById('stat-accuracy').textContent = accuracy + '%';
+      document.getElementById('stat-correct').textContent = correct;
+      document.getElementById('stat-progress-pct').textContent = progress + '%';
+      document.getElementById('stat-progress-bar').style.width = progress + '%';
+
+      // Render kind bars
+      const kindContainer = document.getElementById('kind-progress-container');
+      kindContainer.innerHTML = Object.entries(byKind).map(([kind, k]) => {
+        const pct = k.answered > 0 ? Math.round((k.correct / k.answered) * 100) : 0;
+        const color = pct >= 70 ? 'var(--success)' : pct > 0 ? 'var(--warning)' : 'var(--muted-foreground)';
+        return \`
+          <div class="progress-kind-row">
+            <span class="progress-kind-lbl">\${kind.replace('-', ' ')}</span>
+            <div class="progress-track" style="flex:1; margin-top:0; height:4px;">
+              <div class="progress-fill" style="width:\${k.answered > 0 ? pct : 0}%; background:\${color};"></div>
+            </div>
+            <span class="meta" style="width:30px; text-align:right; font-size:11px;">\${k.correct}/\${k.total}</span>
           </div>
         \`;
       }).join('');
-
-      show('results-view');
     }
 
     function checkHash() {
