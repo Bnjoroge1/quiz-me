@@ -197,7 +197,7 @@ export function renderIndex(): string {
       flex: 1;
       overflow: hidden;
     }
-    /* Collapsible Folder Directory Tree */
+    /* @pierre/trees integration overrides */
     .file-tree {
       width: 250px;
       border-right: 1px solid var(--border);
@@ -205,47 +205,6 @@ export function renderIndex(): string {
       background: #0d1117;
       padding: 0.75rem 0.5rem;
       user-select: none;
-    }
-    .tree-node {
-      font-size: 0.85rem;
-      line-height: 1.6;
-    }
-    .tree-row {
-      display: flex;
-      align-items: center;
-      padding: 0.25rem 0.4rem;
-      cursor: pointer;
-      border-radius: 4px;
-      gap: 0.4rem;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .tree-row:hover {
-      background: var(--accent);
-    }
-    .tree-row.active {
-      background: rgba(31, 111, 235, 0.15);
-      color: #58a6ff;
-      font-weight: 500;
-    }
-    .tree-indent {
-      width: 1.25rem;
-      display: inline-block;
-      flex-shrink: 0;
-    }
-    .tree-toggle {
-      width: 0.8rem;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.7rem;
-      color: #8b949e;
-      flex-shrink: 0;
-    }
-    .tree-icon {
-      font-size: 0.95rem;
-      flex-shrink: 0;
     }
     .code-editor {
       flex: 1;
@@ -334,6 +293,9 @@ export function renderIndex(): string {
       margin-top: 1rem;
     }
   </style>
+  
+  <!-- Import @pierre/trees styles directly from jsDelivr -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@pierre/trees/dist/index.css" />
 </head>
 <body>
   <header>
@@ -408,6 +370,48 @@ export function renderIndex(): string {
     </div>
   </main>
 
+  <!-- Import @pierre/trees natively as ES Module -->
+  <script type="module">
+    import { FileTree } from "https://cdn.jsdelivr.net/npm/@pierre/trees/+esm";
+
+    window._fileTreeInstance = null;
+
+    // Expose init function to standard script
+    window.initPierreTree = function(paths, onSelectCallback) {
+      const container = document.getElementById('explorer-tree');
+      if (!container) return;
+
+      container.innerHTML = '';
+      if (!paths || !paths.length) {
+        container.innerHTML = '<div style="font-size:0.8rem; color:#8b949e; padding:0.5rem;">No files available in this quiz scope.</div>';
+        return;
+      }
+
+      // Instantiate FileTree using @pierre/trees
+      window._fileTreeInstance = new FileTree({
+        paths: paths,
+        search: false,
+        density: 'compact',
+        onSelect: (path) => {
+          if (onSelectCallback) onSelectCallback(path);
+        }
+      });
+
+      window._fileTreeInstance.render({ fileTreeContainer: container });
+    };
+
+    // Expose programatic focus selection for tracing
+    window.focusPierreTreePath = function(path) {
+      if (window._fileTreeInstance && typeof window._fileTreeInstance.focusPath === 'function') {
+        try {
+          window._fileTreeInstance.focusPath(path);
+        } catch (e) {
+          console.warn('Failed to programmatically focus path', e);
+        }
+      }
+    };
+  </script>
+
   <script>
     let quizzes = [];
     let currentQuiz = null;
@@ -415,7 +419,6 @@ export function renderIndex(): string {
     let answers = {};
     let activeFilePath = null;
     let filesData = [];
-    let collapsedPaths = {}; // Map of folder paths that are collapsed
 
     // Initialize application
     window.addEventListener('load', () => {
@@ -472,9 +475,8 @@ export function renderIndex(): string {
         location.hash = '';
         currentQuiz = null;
         filesData = [];
-        collapsedPaths = {};
         renderFileTree();
-        document.getElementById('code-content').innerHTML = '<code style="color:#484f58;">Select a file to inspect lines, or click "Trace Source Code" in a question to highlight grounded code sections.</code>';
+        document.getElementById('code-content').innerHTML = '<code style="color:#484f58;">Select a file to inspect lines, or click \"Trace Source Code\" in a question to highlight grounded code sections.</code>';
         document.getElementById('active-file-path').textContent = 'No file open';
       }
     }
@@ -498,7 +500,6 @@ export function renderIndex(): string {
           filesData = [];
         }
 
-        collapsedPaths = {};
         renderFileTree();
         show('take-view');
         renderQuestion();
@@ -507,104 +508,26 @@ export function renderIndex(): string {
       }
     }
 
-    // Interactive directory tree builder
-    function buildTree(files) {
-      const root = { name: 'root', type: 'folder', path: '', children: {} };
-      files.forEach(f => {
-        const parts = f.path.split('/');
-        let current = root;
-        parts.forEach((part, idx) => {
-          const isLast = idx === parts.length - 1;
-          const currentPath = parts.slice(0, idx + 1).join('/');
-          if (!current.children[part]) {
-            current.children[part] = {
-              name: part,
-              path: currentPath,
-              type: isLast ? 'file' : 'folder',
-              children: {}
-            };
-          }
-          current = current.children[part];
-        });
-      });
-      return root;
-    }
-
-    function toggleFolder(path, event) {
-      if (event) event.stopPropagation();
-      collapsedPaths[path] = !collapsedPaths[path];
-      renderFileTree();
-    }
-
-    function renderNode(node, depth = 0) {
-      if (node.name === 'root') {
-        return Object.values(node.children)
-          .map(child => renderNode(child, depth))
-          .join('');
-      }
-
-      const isFolder = node.type === 'folder';
-      const isCollapsed = collapsedPaths[node.path];
-      const indent = '<span class="tree-indent"></span>'.repeat(depth);
-      
-      let toggleIcon = '';
-      let fileIcon = '';
-      
-      if (isFolder) {
-        toggleIcon = isCollapsed ? '▶' : '▼';
-        fileIcon = '📁';
-      } else {
-        toggleIcon = '';
-        fileIcon = '📄';
-      }
-
-      const activeClass = node.path === activeFilePath ? 'active' : '';
-      const onClickStr = isFolder 
-        ? \`toggleFolder('\${escapeJs(node.path)}', event)\`
-        : \`openFile('\${escapeJs(node.path)}')\`;
-
-      let html = \`
-        <div class="tree-node">
-          <div class="tree-row \${activeClass}" onclick="\${onClickStr}">
-            \${indent}
-            <span class="tree-toggle">\${toggleIcon}</span>
-            <span class="tree-icon">\${fileIcon}</span>
-            <span>\${escapeHtml(node.name)}</span>
-          </div>
-        </div>
-      \`;
-
-      if (isFolder && !isCollapsed) {
-        html += Object.values(node.children)
-          .map(child => renderNode(child, depth + 1))
-          .join('');
-      }
-
-      return html;
-    }
-
     function renderFileTree() {
-      const treeContainer = document.getElementById('explorer-tree');
-      if (!filesData || !filesData.length) {
-        treeContainer.innerHTML = '<div style="font-size:0.8rem; color:#8b949e; padding:0.5rem;">No files available in this quiz scope.</div>';
-        return;
+      if (typeof window.initPierreTree === 'function') {
+        const paths = filesData.map(f => f.path);
+        window.initPierreTree(paths, (path) => {
+          openFile(path);
+        });
+      } else {
+        // Fallback if ESM script not initialized yet
+        setTimeout(renderFileTree, 100);
       }
-      const treeRoot = buildTree(filesData);
-      treeContainer.innerHTML = renderNode(treeRoot);
     }
 
     function openFile(path, highlightLines = null) {
       activeFilePath = path;
       document.getElementById('active-file-path').textContent = path;
       
-      // Auto-expand parent folders of the active file
-      const parts = path.split('/');
-      for (let i = 0; i < parts.length - 1; i++) {
-        const parentPath = parts.slice(0, i + 1).join('/');
-        collapsedPaths[parentPath] = false;
+      // Sync focus with @pierre/trees
+      if (typeof window.focusPierreTreePath === 'function') {
+        window.focusPierreTreePath(path);
       }
-
-      renderFileTree();
 
       const f = filesData.find(x => x.path === path);
       if (!f) {
@@ -703,6 +626,7 @@ export function renderIndex(): string {
       answers[qId] = val;
     }
 
+    // Helper functions
     function prevQuestion() {
       if (currentIndex > 0) {
         currentIndex--;
