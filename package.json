@@ -1,10 +1,10 @@
 {
   "name": "@bnjoroge/quiz-me",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Context-aware quiz plugin for coding agents",
   "type": "module",
   "bin": {
-    "quiz-me": "./dist/src/cli.js"
+    "quiz-me": "dist/src/cli.js"
   },
   "scripts": {
     "build": "tsc",
